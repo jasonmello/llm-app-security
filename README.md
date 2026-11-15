@@ -39,7 +39,7 @@ de segurança completa com a llm-app-security"*.
 ### Instalação
 
 ```bash
-git clone https://github.com/OWNER/llm-app-security.git   # troque OWNER pelo dono do repositório
+git clone https://github.com/jasonmello/llm-app-security.git
 ```
 
 | Agente | Onde copiar `skills/llm-app-security` |
