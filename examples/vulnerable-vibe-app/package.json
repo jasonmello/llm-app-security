@@ -1,0 +1,11 @@
+{
+  "name": "vibe-shop-demo",
+  "private": true,
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "pg": "^8.11.0",
+    "react": "^18.3.1",
+    "expresss-validator-pro": "^1.0.0"
+  }
+}

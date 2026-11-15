@@ -1,0 +1,7 @@
+# Fake credentials live in the intentionally vulnerable example app.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "intentionally vulnerable example with fake values"
+paths = ['''examples/vulnerable-vibe-app/''']

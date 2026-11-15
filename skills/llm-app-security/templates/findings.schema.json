@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LLM App Security findings",
+  "description": "Status-specific rules (confirmed / needs_validation / rejected), trace order, fingerprint uniqueness and path safety are enforced by scripts/validate-findings.cjs.",
+  "type": "object",
+  "required": ["schema_version", "target", "generated_at", "profile", "run_status", "findings"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": 2 },
+    "target": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "commit": { "type": "string" },
+        "dirty": { "type": "boolean" },
+        "scope": { "type": "string" }
+      }
+    },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "profile": { "enum": ["quick", "full", "scoped"] },
+    "run_status": { "enum": ["complete", "incomplete"] },
+    "incomplete_reason": { "type": "string" },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "fingerprint", "status", "category", "title", "location"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^LAS-[0-9]{3,}$" },
+          "fingerprint": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/@+\\[\\]-]*$" },
+          "status": { "enum": ["confirmed", "needs_validation", "rejected"] },
+          "severity": { "enum": ["critical", "high", "medium", "low", "info"] },
+          "confidence": { "enum": ["observed", "inferred"] },
+          "category": {
+            "enum": ["secrets", "authn", "authz", "idor", "data-isolation", "injection", "llm", "agent-injection",
+                     "input-validation", "session", "cors-csrf", "rate-limit", "payments", "supply-chain", "config",
+                     "business-logic", "data-exposure", "file-upload", "crypto", "desktop-mobile", "other"]
+          },
+          "title": { "type": "string", "minLength": 3 },
+          "location": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["file"],
+              "additionalProperties": false,
+              "properties": {
+                "file": { "type": "string", "minLength": 1 },
+                "line": { "type": "integer", "minimum": 1 }
+              }
+            }
+          },
+          "trace": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["kind", "file", "description"],
+              "additionalProperties": false,
+              "properties": {
+                "kind": { "enum": ["entrypoint", "propagation", "sink"] },
+                "file": { "type": "string", "minLength": 1 },
+                "line": { "type": "integer", "minimum": 1 },
+                "description": { "type": "string", "minLength": 1 }
+              }
+            }
+          },
+          "evidence": { "type": "string" },
+          "attack_path": { "type": "string" },
+          "impact": { "type": "string" },
+          "fix": { "type": "string" },
+          "verification": { "type": "string" },
+          "regression_test": { "type": "string" },
+          "blockers": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "validation_plan": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "local": { "type": "string" },
+              "owner_check": { "type": "string" }
+            }
+          },
+          "rejection_reason": { "type": "string" }
+        }
+      }
+    }
+  }
+}

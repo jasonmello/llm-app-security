@@ -1,0 +1,6 @@
+node_modules/
+.DS_Store
+/security/
+# real env files at the root; the example app's fake .env is committed on purpose
+/.env
+/.env.*

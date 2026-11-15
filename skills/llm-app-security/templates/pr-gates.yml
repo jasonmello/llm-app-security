@@ -1,0 +1,90 @@
+# Starter PR gates. Copy to .github/workflows/pr-gates.yml and adapt.
+# Required-check names in the ruleset are the job ids below (build-test,
+# secrets, dependencies, rls-guard), or "caller / callee" for reusable workflows.
+# Do not add `paths:` filters: a required check that never reports blocks merges.
+# Every third-party action is pinned to a full commit SHA; let Dependabot
+# (package-ecosystem: github-actions) bump them. Versions verified 2026-11.
+name: pr-gates
+on:
+  pull_request:
+  # merge_group:   # enable if you use a merge queue (and skip PR-only jobs with `if:`)
+permissions:
+  contents: read
+jobs:
+  build-test:            # Node shown; replace the steps for other stacks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: 24 }      # or node-version-file: .nvmrc
+      # Needs a committed package-lock.json. pnpm: pnpm install --frozen-lockfile.
+      # --ignore-scripts blocks malicious postinstall; add explicit steps for
+      # packages that need generation (e.g. npx prisma generate).
+      - run: npm ci --ignore-scripts
+      - run: npm run build --if-present
+      - run: npm test                   # "test" must be a real script, not npm's default stub
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { fetch-depth: 0, persist-credentials: false }
+      # gitleaks CLI (MIT). gitleaks-action needs a paid license on organization
+      # repos and fails on fork/Dependabot PRs there; the CLI does not.
+      - name: gitleaks
+        env:
+          V: 8.30.1
+          SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          curl -sSfL -o gl.tgz "https://github.com/gitleaks/gitleaks/releases/download/v$V/gitleaks_${V}_linux_x64.tar.gz"
+          echo "$SHA256  gl.tgz" | sha256sum -c -
+          tar xzf gl.tgz gitleaks
+          ./gitleaks git --redact --verbose --log-opts="$BASE..$HEAD"
+
+  dependencies:          # public repos, or private with GitHub Code Security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with: { fail-on-severity: high }
+  # Private repo without Code Security: replace `dependencies` with
+  # dependencies:
+  #   uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@32d3cd482bdadfb38b186c0ad1b031902d55d932 # v2.7.1
+  #   with: { upload-sarif: false }
+  #   permissions: { actions: read, contents: read, security-events: write }
+  # (the required check name becomes "dependencies / osv-scan")
+
+  rls-guard:             # Supabase projects; copy scripts/rls-guard.sh into the repo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - run: bash scripts/ci/rls-guard.sh
+
+  # Team tier: authoritative database check (needs Docker on the runner).
+  # db-rules:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+  #       with: { persist-credentials: false }
+  #     - uses: supabase/setup-cli@1dedf2c611547ede7232d26866dd3c56ab903bbb # v1.7.3
+  #     - run: supabase db start            # applies supabase/migrations
+  #     - name: RLS, views, security definer, buckets
+  #       run: |
+  #         out=$(psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -At -v ON_ERROR_STOP=1 <<'SQL'
+  #         select 'table without RLS: ' || c.oid::regclass from pg_class c join pg_namespace n on n.oid=c.relnamespace
+  #           where n.nspname='public' and c.relkind in ('r','p') and not c.relrowsecurity
+  #         union all
+  #         select 'view bypasses RLS (set security_invoker=true): ' || c.oid::regclass from pg_class c join pg_namespace n on n.oid=c.relnamespace
+  #           where n.nspname='public' and c.relkind='v' and not coalesce(c.reloptions @> array['security_invoker=true'], false)
+  #         union all
+  #         select 'security definer fn callable by anon: ' || p.oid::regprocedure from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+  #           where n.nspname='public' and p.prosecdef and has_function_privilege('anon', p.oid, 'execute')
+  #         union all
+  #         select 'public bucket: ' || id from storage.buckets where public;
+  #         SQL
+  #         ); [ -z "$out" ] || { echo "$out" | sed 's/^/::error::/'; exit 1; }
+  #     - run: supabase test db             # pgTAP tests in supabase/tests/
