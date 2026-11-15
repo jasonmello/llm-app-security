@@ -1,0 +1,29 @@
+# Deploy gate: the deploy job cannot start unless ship-gate passes.
+# Copy to .github/workflows/deploy.yml and replace the deploy steps.
+# scripts/ci/ship-gate.cjs is copied from the J.A.S.O.N. skill (single file).
+name: deploy
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  ship-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: 24 }
+      - run: node scripts/ci/ship-gate.cjs .
+
+  deploy:
+    needs: ship-gate          # blocked deploys stop here
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      # Replace with your deploy, e.g. Vercel/Netlify CLI, supabase db push,
+      # firebase deploy, eas build. Keep deploy secrets in the environment.
+      - run: echo "deploy here"

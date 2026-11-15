@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "waivers": [
+    {
+      "check": "SG-RATE-LIMIT",
+      "target": "app/api/chat",
+      "reason": "Private beta behind invite-only access; limiter ships before public launch",
+      "owner": "maintainer-name",
+      "expires": "2026-12-15"
+    }
+  ]
+}

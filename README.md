@@ -26,8 +26,8 @@ a part of the skill:
 | Letter | Means | Modules |
 |---|---|---|
 | **J**ust | it should be that simple | — |
-| **A**udit | find the holes | quick mode, `01`, `02` |
-| **S**ecure | keep them from coming back | `04`, `05`, `06` |
+| **A**udit | find the holes | pre-deploy check, `01`, `02` |
+| **S**ecure | keep them from coming back, block the deploy | `04`, `05`, `06`, `07` |
 | **O**bserve | watch with bait | `03` (honeytokens) |
 | **N**otify | tell the right people | alerts and the report |
 
@@ -35,28 +35,31 @@ a part of the skill:
 
 | Module | Purpose |
 |---|---|
-| **Quick mode** | Fast pre-launch review that looks at the app the way an attacker would. Read-only. |
+| **Pre-deploy check** | Review before the first deploy (and every deploy after) that looks at the app the way an attacker would, plus the deterministic ship-gate. Read-only. |
 | `01-AUDIT` | Full phased audit: recon → coverage-led hunting → adversarial validation → `findings.json` → report. Also scoped audits ("audit this PR"). |
 | `02-LLM-CODE-PITFALLS` | The typical failures of AI-generated code: secrets, auth only in the UI, IDOR, Supabase/Firebase rules, injection, LLM tool loops, hallucinated packages… |
 | `03-HONEYTOKENS` | Passive bait (e.g. `password.txt` with a fake AWS key from [Canarytokens](https://canarytokens.org)) that alerts you when someone, or a hijacked agent, tries to use it. |
 | `04-AGENT-DEFENSE` | Protects the repository against hidden instructions aimed at agents; rules for `AGENTS.md`/`CLAUDE.md`; permissions and sandboxing. |
 | `05-RELEASE-SUPPLY-CHAIN` | Secret scanning, dependency hygiene, release checklist. |
 | `06-PR-GATES` | PR quality gates in three tiers (free starter → enterprise with SonarQube/Wiz): merge blocking, authorization tests, SAST, coverage on sensitive code, RLS guard, DAST, security acceptance criteria for a QA agent, and protecting CI itself from agents. |
+| `07-DEPLOY-GATE` | **Blocks the deploy** instead of listing warnings: `ship-gate.cjs` (one file, zero dependencies) fails on exposed secrets, open Supabase/Firebase rules, auth or LLM endpoints without rate limiting, and unhandled critical findings. Conscious exceptions go in an expiring waiver file. |
 
-### Paste-ready prompt before shipping a client's app
+### Paste-ready prompt before the first deploy
 
 > Review this project as if you wanted to break into it. Look for exposed API keys, routes without login and databases without access rules. List what you found and how to fix it, without changing anything yet.
 
-With the skill installed, the agent runs *quick mode* and returns a verdict
-(ready / ready after fixing N items / not ready), a table with severity,
+Run it before the **first** deploy, not at launch: by launch the app already
+has a public URL and real users. With the skill installed, the agent runs the
+ship-gate and the pre-deploy check and returns a verdict (ready to deploy / do
+not deploy until N items are fixed / do not deploy), a table with severity,
 location, fix and effort, owner checks for things only visible in your
 dashboards, and what it did not check. For the full audit: *"run a full
 security audit with J.A.S.O.N."*.
 
 <details>
-<summary>Example answer (real quick-mode run on <code>examples/vulnerable-vibe-app</code>, shortened)</summary>
+<summary>Example answer (real pre-deploy run on <code>examples/vulnerable-vibe-app</code>, shortened)</summary>
 
-> **Verdict: not ready.** 9 critical and 2 high items. The worst thing an attacker can do today needs no account: open `GET /api/admin/users` and get every user's email and plain-text password.
+> **Verdict: do not deploy.** 9 critical and 2 high items; ship-gate BLOCKED (6). The worst thing an attacker can do today needs no account: open `GET /api/admin/users` and get every user's email and plain-text password.
 >
 > - **Exposed API keys:** found · **Routes without login:** found · **Database without access rules:** found
 >
@@ -74,6 +77,24 @@ security audit with J.A.S.O.N."*.
 > Which fixes should I apply?
 
 </details>
+
+### Deploy gate: block, don't warn
+
+Builders ship over warnings. The ship-gate stops the deploy instead: copy
+`skills/jason/scripts/ship-gate.cjs` to `scripts/ci/` in your app and run it
+before and after the build (the second run sees the bundles), so a blocker
+fails the deploy on Vercel, Netlify, Cloudflare Pages and similar hosts:
+
+```json
+"build": "node scripts/ci/ship-gate.cjs && next build && node scripts/ci/ship-gate.cjs"
+```
+
+It checks exposed secrets (env prefixes, live keys, bundles), Supabase RLS,
+open policies and views, Firebase rules, rate limits on auth/LLM endpoints and
+confirmed critical findings. Exit 1 means do not deploy. Shipping anyway takes
+an explicit, expiring waiver with a reason and an owner; leaked live secrets
+cannot be waived. Details, GitHub Actions, Firebase and Expo setups:
+`skills/jason/07-DEPLOY-GATE.md`.
 
 ### Install
 
@@ -179,8 +200,8 @@ da skill:
 | Letra | Significa | Módulos |
 |---|---|---|
 | **J**ust | "simples assim" | — |
-| **A**udit | encontrar as falhas | quick mode, `01`, `02` |
-| **S**ecure | impedir que elas voltem | `04`, `05`, `06` |
+| **A**udit | encontrar as falhas | checagem pré-deploy, `01`, `02` |
+| **S**ecure | impedir que voltem, barrar o deploy | `04`, `05`, `06`, `07` |
 | **O**bserve | vigiar com iscas | `03` (honeytokens) |
 | **N**otify | avisar quem precisa | alertas e o relatório |
 
@@ -188,28 +209,31 @@ da skill:
 
 | Módulo | Para que serve |
 |---|---|
-| **Quick mode** (modo rápido) | Revisão rápida antes do lançamento, que olha o app como um atacante olharia. Somente leitura. |
+| **Pre-deploy check** (checagem pré-deploy) | Revisão antes do primeiro deploy (e de todos os seguintes), olhando o app como um atacante olharia, mais o ship-gate determinístico. Somente leitura. |
 | `01-AUDIT` | Auditoria completa em fases: reconhecimento → caça guiada por cobertura → validação adversarial → `findings.json` → relatório. Também faz auditorias com escopo definido ("audite este PR"). |
 | `02-LLM-CODE-PITFALLS` | As falhas típicas de código gerado por IA: segredos expostos, autenticação só na UI, IDOR, regras do Supabase/Firebase, injection, loops de ferramentas do LLM, pacotes alucinados… |
 | `03-HONEYTOKENS` | Iscas passivas (por exemplo, um `password.txt` com uma chave AWS falsa do [Canarytokens](https://canarytokens.org)) que te avisam quando alguém, ou um agente sequestrado, tenta usá-las. |
 | `04-AGENT-DEFENSE` | Protege o repositório contra instruções escondidas direcionadas a agentes; regras para `AGENTS.md`/`CLAUDE.md`; permissões e sandboxing. |
 | `05-RELEASE-SUPPLY-CHAIN` | Secret scanning, higiene de dependências, checklist de release. |
 | `06-PR-GATES` | Quality gates de PR em três níveis (do inicial gratuito ao enterprise com SonarQube/Wiz): bloqueio de merge, testes de autorização, SAST, cobertura em código sensível, guarda de RLS, DAST, critérios de aceite de segurança para um agente de QA e proteção do próprio CI contra agentes. |
+| `07-DEPLOY-GATE` | **Barra o deploy** em vez de listar avisos: o `ship-gate.cjs` (um arquivo, zero dependências) falha com segredos expostos, regras abertas no Supabase/Firebase, endpoints de auth ou LLM sem rate limit e achados críticos não resolvidos. Exceções conscientes vão num arquivo de waivers com data de validade. |
 
-### Prompt pronto para colar antes de entregar o app de um cliente
+### Prompt pronto para colar antes do primeiro deploy
 
 > Revise este projeto como se você quisesse invadi-lo. Procure chaves de API expostas, rotas sem login e bancos de dados sem regras de acesso. Liste o que encontrou e como corrigir, sem alterar nada ainda.
 
-Com a skill instalada, o agente roda o *quick mode* e devolve um veredito
-(pronto / pronto depois de corrigir N itens / não está pronto), uma tabela com severidade,
+Rode antes do **primeiro** deploy, não no lançamento: no lançamento o app já tem
+URL pública e usuários reais. Com a skill instalada, o agente roda o ship-gate e a
+checagem pré-deploy e devolve um veredito (pode fazer o deploy / não faça o deploy até
+corrigir N itens / não faça o deploy), uma tabela com severidade,
 localização, correção e esforço, itens para o dono conferir, já que só aparecem nos seus
 painéis, e o que ele não verificou. Para a auditoria completa: *"rode uma auditoria
 de segurança completa com o J.A.S.O.N."*.
 
 <details>
-<summary>Exemplo de resposta (execução real do quick mode em <code>examples/vulnerable-vibe-app</code>, resumida)</summary>
+<summary>Exemplo de resposta (execução real da checagem pré-deploy em <code>examples/vulnerable-vibe-app</code>, resumida)</summary>
 
-> **Veredito: não está pronto.** 9 itens críticos e 2 altos. O pior que um atacante consegue fazer hoje não exige conta: abrir `GET /api/admin/users` e pegar o email e a senha em texto puro de todos os usuários.
+> **Veredito: não faça o deploy.** 9 itens críticos e 2 altos; ship-gate BLOQUEADO (6). O pior que um atacante consegue fazer hoje não exige conta: abrir `GET /api/admin/users` e pegar o email e a senha em texto puro de todos os usuários.
 >
 > - **Chaves de API expostas:** encontradas · **Rotas sem login:** encontradas · **Banco sem regras de acesso:** encontrado
 >
@@ -227,6 +251,25 @@ de segurança completa com o J.A.S.O.N."*.
 > Quais correções devo aplicar?
 
 </details>
+
+### Trava de deploy: bloquear, não só avisar
+
+Aviso a gente ignora e faz o deploy mesmo assim. O ship-gate trava o deploy:
+copie `skills/jason/scripts/ship-gate.cjs` para `scripts/ci/` no seu app e
+rode antes e depois do build (a segunda execução enxerga os bundles), para que
+um bloqueio derrube o deploy na Vercel, Netlify, Cloudflare Pages e hosts parecidos:
+
+```json
+"build": "node scripts/ci/ship-gate.cjs && next build && node scripts/ci/ship-gate.cjs"
+```
+
+Ele verifica segredos expostos (prefixos de env, chaves reais, bundles), RLS,
+políticas e views abertas no Supabase, regras do Firebase, rate limit em
+endpoints de auth/LLM e achados críticos confirmados. Saída 1 significa: não faça
+o deploy. Para subir mesmo assim, é preciso um waiver explícito, com motivo,
+responsável e data de validade; segredos reais vazados não podem ser
+dispensados. Detalhes e configurações para GitHub Actions, Firebase e Expo:
+`skills/jason/07-DEPLOY-GATE.md`.
 
 ### Instalação
 
@@ -332,8 +375,8 @@ una parte de la skill:
 | Letra | Significa | Módulos |
 |---|---|---|
 | **J**ust | "así de simple" | — |
-| **A**udit | encontrar los huecos | quick mode, `01`, `02` |
-| **S**ecure | evitar que vuelvan | `04`, `05`, `06` |
+| **A**udit | encontrar los huecos | revisión previa al deploy, `01`, `02` |
+| **S**ecure | evitar que vuelvan, frenar el deploy | `04`, `05`, `06`, `07` |
 | **O**bserve | vigilar con señuelos | `03` (honeytokens) |
 | **N**otify | avisar a quien corresponde | alertas y el informe |
 
@@ -341,28 +384,31 @@ una parte de la skill:
 
 | Módulo | Propósito |
 |---|---|
-| **Quick mode** (modo rápido) | Revisión rápida antes del lanzamiento que mira la app como lo haría un atacante. Solo lectura. |
+| **Pre-deploy check** (revisión previa al deploy) | Revisión antes del primer deploy (y de cada deploy siguiente) que mira la app como lo haría un atacante, más el ship-gate determinista. Solo lectura. |
 | `01-AUDIT` | Auditoría completa por fases: reconocimiento → búsqueda guiada por cobertura → validación adversarial → `findings.json` → informe. También auditorías acotadas ("audita este PR"). |
 | `02-LLM-CODE-PITFALLS` | Las fallas típicas del código generado por IA: secretos, autenticación solo en la interfaz, IDOR, reglas de Supabase/Firebase, inyección, bucles de herramientas del LLM, paquetes alucinados… |
 | `03-HONEYTOKENS` | Señuelos pasivos (p. ej., `password.txt` con una clave falsa de AWS de [Canarytokens](https://canarytokens.org)) que te alertan cuando alguien, o un agente secuestrado, intenta usarlos. |
 | `04-AGENT-DEFENSE` | Protege el repositorio contra instrucciones ocultas dirigidas a agentes; reglas para `AGENTS.md`/`CLAUDE.md`; permisos y sandboxing. |
 | `05-RELEASE-SUPPLY-CHAIN` | Escaneo de secretos, higiene de dependencias, checklist de lanzamiento. |
 | `06-PR-GATES` | Quality gates de PR en tres niveles (inicial gratuito → enterprise con SonarQube/Wiz): bloqueo de merge, pruebas de autorización, SAST, cobertura en código sensible, guardia de RLS, DAST, criterios de aceptación de seguridad para un agente de QA y protección del propio CI frente a agentes. |
+| `07-DEPLOY-GATE` | **Frena el deploy** en lugar de listar avisos: `ship-gate.cjs` (un archivo, cero dependencias) falla con secretos expuestos, reglas abiertas en Supabase/Firebase, endpoints de auth o LLM sin rate limit y hallazgos críticos sin resolver. Las excepciones conscientes van en un archivo de waivers con fecha de vencimiento. |
 
-### Prompt listo para pegar antes de entregar la app de un cliente
+### Prompt listo para pegar antes del primer deploy
 
 > Revisa este proyecto como si quisieras vulnerarlo. Busca claves de API expuestas, rutas sin login y bases de datos sin reglas de acceso. Haz una lista de lo que encontraste y de cómo corregirlo, sin cambiar nada todavía.
 
-Con la skill instalada, el agente ejecuta el *quick mode* y devuelve un veredicto
-(lista / lista después de corregir N puntos / no lista), una tabla con severidad,
+Ejecútalo antes del **primer** deploy, no en el lanzamiento: para entonces la app
+ya tiene URL pública y usuarios reales. Con la skill instalada, el agente ejecuta el
+ship-gate y la revisión previa al deploy y devuelve un veredicto (lista para el deploy /
+no hagas el deploy hasta corregir N puntos / no hagas el deploy), una tabla con severidad,
 ubicación, corrección y esfuerzo, comprobaciones que debe hacer el responsable sobre lo que solo
 se ve en tus paneles, y lo que no revisó. Para la auditoría completa: *"haz una
 auditoría de seguridad completa con J.A.S.O.N."*.
 
 <details>
-<summary>Ejemplo de respuesta (ejecución real del quick mode en <code>examples/vulnerable-vibe-app</code>, resumida)</summary>
+<summary>Ejemplo de respuesta (ejecución real de la revisión previa al deploy en <code>examples/vulnerable-vibe-app</code>, resumida)</summary>
 
-> **Veredicto: no está lista.** 9 puntos críticos y 2 altos. Lo peor que un atacante puede hacer hoy no requiere cuenta: abrir `GET /api/admin/users` y obtener el email y la contraseña en texto plano de todos los usuarios.
+> **Veredicto: no hagas el deploy.** 9 puntos críticos y 2 altos; ship-gate BLOQUEADO (6). Lo peor que un atacante puede hacer hoy no requiere cuenta: abrir `GET /api/admin/users` y obtener el email y la contraseña en texto plano de todos los usuarios.
 >
 > - **Claves de API expuestas:** encontradas · **Rutas sin login:** encontradas · **Base de datos sin reglas de acceso:** encontrada
 >
@@ -380,6 +426,25 @@ auditoría de seguridad completa con J.A.S.O.N."*.
 > ¿Qué correcciones aplico?
 
 </details>
+
+### Bloqueo de deploy: frenar, no solo avisar
+
+Los avisos se ignoran y el deploy sale igual. El ship-gate frena el deploy:
+copia `skills/jason/scripts/ship-gate.cjs` a `scripts/ci/` en tu app y
+ejecútalo antes y después del build (la segunda ejecución ve los bundles), para
+que un bloqueo haga fallar el deploy en Vercel, Netlify, Cloudflare Pages y hosts similares:
+
+```json
+"build": "node scripts/ci/ship-gate.cjs && next build && node scripts/ci/ship-gate.cjs"
+```
+
+Revisa secretos expuestos (prefijos de env, claves reales, bundles), RLS,
+políticas y vistas abiertas en Supabase, reglas de Firebase, rate limit en
+endpoints de auth/LLM y hallazgos críticos confirmados. Salida 1 significa: no
+hagas el deploy. Para subir de todos modos hace falta un waiver explícito, con
+motivo, responsable y fecha de vencimiento; los secretos reales filtrados no se
+pueden eximir. Detalles y configuraciones para GitHub Actions, Firebase y Expo:
+`skills/jason/07-DEPLOY-GATE.md`.
 
 ### Instalación
 

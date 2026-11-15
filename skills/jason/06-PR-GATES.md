@@ -9,7 +9,7 @@ whole team merges.
 
 | Tier | For | Required checks |
 |---|---|---|
-| **Starter** (~1 h) | solo dev, Lovable/Bolt/v0 app, small client project | branch protection · build + tests · secrets (gitleaks) · dependencies · RLS guard (Supabase) |
+| **Starter** (~1 h) | solo dev, Lovable/Bolt/v0 app, small client project | branch protection · build + tests · secrets (gitleaks) · dependencies · ship-gate (07) |
 | **Team** | a few devs, paying users | Starter + SAST (Semgrep/CodeQL) · authz tests · coverage on sensitive paths · IaC/container scan · DB-rules job · CODEOWNERS review |
 | **Company** | regulated data, many repos | Team + commercial platforms (SonarQube, Wiz, Snyk…) · DAST on preview · security acceptance criteria checked by a QA agent · signed commits/releases |
 
@@ -38,7 +38,8 @@ nobody reads are worse than four that block merges.
 | **IaC / container** | public buckets, open security groups, root containers, vulnerable images | Trivy, Checkov | Wiz |
 | **DAST** | missing headers, insecure cookies, open CORS on the running app | ZAP baseline (`zaproxy/action-baseline`, pin SHA) with `fail_action: true` (default is false, so it never blocks), `allow_issue_writing: false`, a rules file to tune noise; target the preview URL | Burp Enterprise, Wiz |
 | **DB rules** | tables without RLS, open policies, RLS-bypassing views, `security definer` open to anon, public buckets | Starter: `scripts/rls-guard.sh` (heuristic). Team: `db-rules` job (query after `supabase db start`) + pgTAP (`supabase test db`). Firebase: `firebase emulators:exec --only firestore,storage "npm run test:rules"` with `@firebase/rules-unit-testing` (`assertFails` for another user and for unauthenticated) | — |
-| **Security review (agent)** | logic flaws tools miss | this skill's quick mode on the PR diff, posted safely (§3) | AI review products |
+| **Deploy gate** | exposed secrets, open database rules, missing rate limits, unhandled critical findings reaching production | `scripts/ship-gate.cjs` as a required check here **and** before the deploy itself ([07](07-DEPLOY-GATE.md)) | — |
+| **Security review (agent)** | logic flaws tools miss | this skill's pre-deploy check on the PR diff, posted safely (§3) | AI review products |
 
 Ready-to-copy workflow: [templates/pr-gates.yml](templates/pr-gates.yml)
 (Starter jobs plus the Team `db-rules` job commented out). Copy

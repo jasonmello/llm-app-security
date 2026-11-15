@@ -4,6 +4,44 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.4.0] - 2026-11-15
+
+A review at launch is too late and warnings get shipped over: J.A.S.O.N. now
+gates the deploy.
+
+### Added
+- `scripts/ship-gate.cjs`: deterministic, read-only deploy gate (single file,
+  zero dependencies). Blocks on secrets with public env prefixes or read by
+  client code, real-looking live secrets (including build output and Supabase
+  `service_role` JWTs), committed `.env`, Supabase tables without RLS and open
+  policies, open Firebase rules, auth/LLM endpoints without rate limiting, and
+  confirmed critical/high findings. Exit 1 = do not deploy.
+- Expiring waivers (`security/waivers.json`) with reason and owner; leaked
+  live secrets cannot be waived. Config in `security/ship-gate.json`
+  (`ignore_paths`, `public_tables`, `rate_limit.where`).
+- Module `07-DEPLOY-GATE.md`: setup before the first deploy for build scripts
+  (Vercel, Netlify, Cloudflare Pages), GitHub Actions (`needs: ship-gate`),
+  Firebase predeploy, Supabase and Expo EAS; honest limits for one-click
+  publishers.
+- Templates: `deploy-gate.yml`, `ship-gate.json`, `waivers.json`; ship-gate job
+  in `pr-gates.yml`.
+- Tests: the example app is blocked, a fixed copy passes, waivers, Firebase,
+  honeytoken exclusion, findings, CLI exit codes, and regressions from an
+  independent evaluation on 5 generated apps (15 true positives, 0 false
+  positives; the 4 in-scope misses it found are now blocked: unconditional
+  Firebase rules, LLM routes calling a helper, authenticated-only policies,
+  views without `security_invoker`).
+- No unwaivable false positives on local-dev values (localhost or docker DB
+  URLs, Supabase CLI demo key); honeytoken bait skipped by every check;
+  `ignore_paths` never hides secrets (they become warnings); one rate-limit
+  item per route so waivers can target a route; waiver dates validated.
+
+### Changed
+- Quick mode is now the **pre-deploy check**: meant for before the first deploy,
+  starts with the ship-gate, and its verdict is "do not deploy" when there is a
+  blocker or a critical.
+- README (EN/pt-BR/ES): deploy gate section, pre-deploy wording.
+
 ## [0.3.0] - 2026-11-15
 
 ### Changed
@@ -66,6 +104,7 @@ First public release.
   with an answer key.
 - README in English, Portuguese (Brazil) and Spanish.
 
+[0.4.0]: https://github.com/jasonmello/llm-app-security/releases/tag/v0.4.0
 [0.3.0]: https://github.com/jasonmello/llm-app-security/releases/tag/v0.3.0
 [0.2.1]: https://github.com/jasonmello/llm-app-security/releases/tag/v0.2.1
 [0.2.0]: https://github.com/jasonmello/llm-app-security/releases/tag/v0.2.0

@@ -2,7 +2,7 @@
 
 Coding agents produce code that works on the happy path and ships fast. These
 are the failures we see most. Use this as the hunting checklist in the full
-audit (phase 2) and as the reference behind quick mode's list.
+audit (phase 2) and as the reference behind the pre-deploy check's list.
 
 ## 1. Secrets in the wrong place
 

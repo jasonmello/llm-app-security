@@ -1,6 +1,6 @@
 ---
 name: jason
-description: J.A.S.O.N. (Just Audit, Secure, Observe, Notify) — LLM App Security. Defensive security for software built with LLMs and coding agents. Pre-launch "think like an attacker" check, full audit of AI-generated code (secrets, auth, IDOR, Supabase/Firebase rules, injection, LLM/agent tools, supply chain), PR quality gates, passive honeytokens/canaries that alert when an intruder or hijacked agent uses fake credentials, and repo defense against prompt injection aimed at coding agents. Use for security audits or reviews, "is my app safe", "review as if you wanted to break in", exposed API keys, routes without login, database rules, honeytokens/canary tokens/password.txt bait, prompt-injection defense, CI security gates, or securing a release.
+description: J.A.S.O.N. (Just Audit, Secure, Observe, Notify) — LLM App Security. Defensive security for software built with LLMs and coding agents. Pre-deploy "think like an attacker" check with a deterministic ship-gate that blocks deploys (secrets, open database rules, missing rate limits), full audit of AI-generated code (secrets, auth, IDOR, Supabase/Firebase rules, injection, LLM/agent tools, supply chain), PR quality gates, passive honeytokens/canaries that alert when an intruder or hijacked agent uses fake credentials, and repo defense against prompt injection aimed at coding agents. Use for security audits or reviews, "is my app safe", "review as if you wanted to break in", exposed API keys, routes without login, database rules, honeytokens/canary tokens/password.txt bait, prompt-injection defense, CI security gates, blocking a deploy, "before the first deploy", or securing a release.
 ---
 
 # J.A.S.O.N. — LLM App Security
@@ -17,27 +17,37 @@ the modules the request needs.
 | Stop the repo from steering coding agents | [04-AGENT-DEFENSE.md](04-AGENT-DEFENSE.md) |
 | Release checklist, dependency hygiene, secret-scanning setup | [05-RELEASE-SUPPLY-CHAIN.md](05-RELEASE-SUPPLY-CHAIN.md) |
 | CI workflow, PR gates, merge blocking, authz tests, security acceptance criteria | [06-PR-GATES.md](06-PR-GATES.md) |
+| Block deploys on critical findings (ship-gate), waivers | [07-DEPLOY-GATE.md](07-DEPLOY-GATE.md) |
 
 Modes:
 
-- **Quick mode** (below): read-only, answer in chat.
+- **Pre-deploy check** (below): read-only review plus the ship-gate result,
+  answer in chat. Run it before the **first** deploy, not at launch: by launch
+  the app already has a public URL and users.
 - **Full audit** = 01 + 02, writes `security/`.
 - **Scoped audit** = the full audit limited to named paths, a subsystem or a
   diff ("audit this PR", "only the payments code"); everything else is
   `out_of_scope` and the report says it is partial (01 "Repeat and scoped runs").
-- **Full security pass** = full audit, then 05 and 06, then 04, then offer 03.
+- **Deploy gate setup** = 07: wire the ship-gate so blockers stop the deploy.
+- **Full security pass** = full audit, then 05, 06 and 07, then 04, then offer 03.
   Missing controls from 04/05/06 (no secret scanning, no branch protection)
   go in REPORT.md under recommendations, not as findings, unless they hide an
   exploitable flaw.
 
-## Quick mode: pre-launch check
+## Pre-deploy check (quick mode)
 
 Triggered by requests like "review this as if you wanted to break in", "check
-before I ship the client's app", "look for exposed keys, routes without login
-and databases without rules" — in any language. Answer in the user's language.
+before I deploy / ship the client's app", "look for exposed keys, routes
+without login and databases without rules" — in any language. Answer in the
+user's language. Best moment: before the first deploy; then before each one.
+
+**Start with the ship-gate** (command in "Scripts"; read-only, runs no target
+code). Its blockers are deterministic: report every one in the table as
+critical or high, and they decide the verdict on their own.
 
 Read-only: no files changed (not even `security/`) unless asked. Allowed:
-read-only local commands (grep, find, git log -p). Optional network lookups
+read-only local commands (grep, find, git log -p, and this skill's own
+`ship-gate.cjs`, which only reads files). Optional network lookups
 that send only package names (`npm view`, `npm audit`, `pip index versions`,
 `pip-audit -r requirements.txt --no-deps`); if skipped, list them
 under "What I did not check". Never install, build or run target code.
@@ -91,11 +101,13 @@ plus local storage. Write "not applicable: <reason>" when one does not apply.
 
 **Output** (in chat, in the user's language):
 
-1. Verdict: **ready / ready after fixing N item(s) / not ready** (N = critical
-   + high rows; not ready for any critical or several highs), plus one
-   sentence on the worst thing an attacker could do today. When most of what
+1. Verdict: **ready to deploy / do not deploy until N item(s) are fixed /
+   do not deploy** (any ship-gate blocker or any critical → **do not deploy**;
+   only highs → do not deploy until N are fixed; N = critical + high rows; a
+   warning the user can ship over protects nothing), plus one sentence on the worst thing an attacker could do today. When most of what
    you checked is sound, say so in one sentence, limited to the covered areas.
-   Then one line per big-three item (found / clean / not applicable: reason).
+   Then one line per big-three item (found / clean / not applicable: reason)
+   and one line with the ship-gate result (PASS / BLOCKED: N).
 2. Table ordered by severity (scale in [01-AUDIT.md](01-AUDIT.md) phase 4):
    `# · severity · what · where (file:line) · how to fix · effort`.
    Effort in rough time (10 min, 1 h, 1 day). One row per root cause: when
@@ -116,9 +128,11 @@ plus local storage. Write "not applicable: <reason>" when one does not apply.
    criticals and highs, then inferred items and the rest. End with: which
    fixes should I apply?
 
-If you found a critical or high, or the app handles payments, health data or
-other people's sensitive records, recommend the full audit in your closing
-lines. Do not start it: it writes to `security/` and needs the user's yes.
+If the project has no deploy gate yet, offer to set one up (07) so these
+blockers stop the deploy instead of being a list. If you found a critical or
+high, or the app handles payments, health data or other people's sensitive
+records, also recommend the full audit. Do not start either without the
+user's yes: both write files.
 
 ## Ground rules (always)
 
@@ -194,6 +208,8 @@ node "${CLAUDE_SKILL_DIR}/scripts/validate-findings.cjs" security/findings.json 
 node "${CLAUDE_SKILL_DIR}/scripts/check-honeytokens.cjs" <inventory.md> --root <repo>
 # Supabase RLS heuristic (06); copy to scripts/ci/ in the target repo for CI
 bash "${CLAUDE_SKILL_DIR}/scripts/rls-guard.sh" <repo>
+# Deploy gate (07): exit 1 = do not deploy; copy to scripts/ci/ship-gate.cjs in the target repo
+node "${CLAUDE_SKILL_DIR}/scripts/ship-gate.cjs" <repo>
 ```
 
 ## Working with the user
