@@ -4,6 +4,32 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.6.0] - 2026-11-15
+
+### Added
+- Tool annotation honesty (02 §6): MCP hints are claims, not controls. A
+  `readOnlyHint` tool that writes (raw SQL included), or a `destructiveHint:
+  false` tool that deletes or overwrites, is an approval bypass in clients that
+  skip confirmation on those hints (ChatGPT developer mode, claude.ai
+  connectors). WebMCP hints default to `false`, so a WebMCP tool with
+  irreversible effects and no `consequentialHint` is the usual finding. Fixes by
+  construction: confirmation decided by server-side policy, read-only tools get
+  read-only clients, server-side confirmation (plus Claude Code's
+  `requiresUserInteraction`).
+- Pre-deploy check item 5 and the 01 severity guide cover it (high only when a
+  client skips confirmation on the hint and the tool has a side effect).
+- 04 §4: never auto-approve third-party tools because of their annotations.
+- 06 §4: acceptance criterion and a spy-based unit test (handlers built from
+  injected clients; SQL text inspected, so raw `query("update ...")` is caught),
+  with its limit stated: evidence, not proof.
+- Pre-deploy check: a ship-gate block decides the verdict, but the row keeps
+  its severity from the 01 guide.
+- Example app: an MCP server with a dishonest `readOnlyHint` tool and a
+  genuinely read-only decoy; answer key now has 17 flaws.
+
+Not added to the ship-gate on purpose: tracing tool handlers across files by
+pattern would block on false positives and miss real cases.
+
 ## [0.5.0] - 2026-11-15
 
 Result of running J.A.S.O.N. on its own repository: 23 findings, all confirmed
@@ -167,6 +193,7 @@ First public release.
   with an answer key.
 - README in English, Portuguese (Brazil) and Spanish.
 
+[0.6.0]: https://github.com/jasonmello/llm-app-security/releases/tag/v0.6.0
 [0.5.0]: https://github.com/jasonmello/llm-app-security/releases/tag/v0.5.0
 [0.4.0]: https://github.com/jasonmello/llm-app-security/releases/tag/v0.4.0
 [0.3.0]: https://github.com/jasonmello/llm-app-security/releases/tag/v0.3.0

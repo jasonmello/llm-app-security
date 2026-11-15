@@ -1,7 +1,7 @@
 # Answer key for `vulnerable-vibe-app`
 
 Kept outside the app folder so an agent testing the skill on the app does not
-read it. A good run should find all 16 (rows 11 and 12 count when correctly rejected or noted as hardening with the right reason). Severities follow the skill's own rules (SKILL.md ground rule 8, 01 severity guide).
+read it. A good run should find all 17 (rows 11 and 12 count when correctly rejected or noted as hardening with the right reason). Severities follow the skill's own rules (SKILL.md ground rule 8, 01 severity guide).
 
 | # | Severity | Category | Where | Flaw |
 |---|---|---|---|---|
@@ -20,6 +20,7 @@ read it. A good run should find all 16 (rows 11 and 12 count when correctly reje
 | 13 | medium | rate-limit | `server.js` | No rate limit on login (brute force) |
 | 14 | high | supply-chain | `package.json` | Typo-squat-looking, unregistered dependency `expresss-validator-pro` |
 | 16 | high | agent-injection | `README.md` | Hidden HTML comment instructing agents to print `.env` |
+| 17 | high | llm | `mcp/tools.ts` `get_order_status` | Tool labeled `readOnlyHint: true` writes (`update orders ... refund_requested`): clients that skip confirmation for read-only tools (ChatGPT, claude.ai connectors) let the model change orders unasked. No ownership check either. `list_products` is genuinely read-only (decoy: not a finding) |
 | 15 | medium | config | `server.js` | Error handler returns `err.message` and `err.stack` to the client |
 
 Extra credit: login returns a stored static `session_token` (sessions never rotate).

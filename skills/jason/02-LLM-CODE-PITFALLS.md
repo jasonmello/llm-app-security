@@ -160,6 +160,39 @@ siblings have.
   argument object and be single-use; otherwise the model executes different
   arguments or replays it on retry/resume. Side-effecting tools need
   idempotency keys; agent loops need step and spend caps per request.
+- **Tool annotations are claims, not controls.** MCP hints (`readOnlyHint`,
+  `destructiveHint`, `idempotentHint`, `openWorldHint`) are self-declared; the
+  spec says clients must treat them as untrusted unless the server is trusted,
+  and its defaults are the cautious case (no annotation = may write,
+  destructive, open world). Some clients act on them anyway: ChatGPT developer
+  mode and claude.ai connectors run `readOnlyHint: true` tools without asking.
+  Check the handler, not the label:
+  - `readOnlyHint: true` is dishonest if the handler writes anything: database
+    insert/update/delete (including raw SQL in `query(...)`), files, messages,
+    payments, or a mutating API call. Reading from the network is fine.
+  - `destructiveHint: false` means "only additive changes": inserting a row or
+    sending a message is honest; it is dishonest only if the handler deletes,
+    overwrites or updates existing data, or does something irreversible.
+  - **WebMCP** (browser tools; W3C Community Group draft with a Chrome origin
+    trial as of late 2026; API names still changing) has its own hints:
+    `readOnlyHint`, `consequentialHint` (significant or irreversible effects),
+    `untrustedContentHint` (and `debugging`), all defaulting to `false`. A
+    WebMCP tool with a significant or irreversible effect and **no**
+    `consequentialHint` is not treated as consequential: there the usual
+    finding is the missing hint, not a lie. These tools run with the user's
+    session.
+  - Fix by construction, so a wrong label cannot matter: decide confirmation
+    from your own server-side policy (a list of side-effect-free tools), not
+    from the annotation; give read-only tools read-only capabilities (a
+    database role or client limited to SELECT, no write secrets); confirm side
+    effects on the server (e.g. a second confirmation step). In Claude Code,
+    `_meta["anthropic/requiresUserInteraction"]: true` also forces a prompt on
+    every call; other clients may ignore it.
+  - Where to look: TS SDK v2 `registerTool(name, { annotations: {...} }, handler)`
+    (v1 also `server.tool(name, description, schema, annotations, handler)`),
+    Python SDK `@mcp.tool(annotations=ToolAnnotations(read_only_hint=...))`
+    (camelCase also accepted), WebMCP `document.modelContext.registerTool(...)`
+    (older code: `navigator.modelContext`; names may change while it is a draft).
 - Report injected text by what it can reach (tools, data, rendering), not by
   its mere presence. Instructions in a system prompt ("never reveal X") are
   not access control; enforce limits in code.

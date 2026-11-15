@@ -157,7 +157,7 @@ Node 20+ (plus bash and perl for `rls-guard.sh`).
 npm test
 ```
 
-`examples/vulnerable-vibe-app` is an app with 16 deliberately planted flaws;
+`examples/vulnerable-vibe-app` is an app with 17 deliberately planted flaws;
 the answer key is `examples/ANSWER_KEY.md`. For a fair benchmark, copy only the
 app folder somewhere else (without the answer key), run the skill on it, then
 compare. Never install or run the example app: it is insecure on purpose and
@@ -332,7 +332,7 @@ Node 20+ (mais bash e perl para o `rls-guard.sh`).
 npm test
 ```
 
-`examples/vulnerable-vibe-app` é um app com 16 falhas plantadas de propósito;
+`examples/vulnerable-vibe-app` é um app com 17 falhas plantadas de propósito;
 o gabarito está em `examples/ANSWER_KEY.md`. Para um benchmark justo, copie só a
 pasta do app para outro lugar (sem o gabarito), rode a skill nela e depois
 compare. Nunca instale nem rode o app de exemplo: ele é inseguro de propósito e
@@ -507,7 +507,7 @@ Node 20+ (más bash y perl para `rls-guard.sh`).
 npm test
 ```
 
-`examples/vulnerable-vibe-app` es una app con 16 fallas plantadas a propósito;
+`examples/vulnerable-vibe-app` es una app con 17 fallas plantadas a propósito;
 las respuestas están en `examples/ANSWER_KEY.md`. Para una comparación justa, copia solo la
 carpeta de la app a otro lugar (sin las respuestas), ejecuta la skill sobre ella y luego
 compara. Nunca instales ni ejecutes la app de ejemplo: es insegura a propósito y

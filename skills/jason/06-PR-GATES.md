@@ -101,6 +101,10 @@ them; tests encode them):
       policies scoped to `auth.uid()`; no `using (true)` on user data.
 - [ ] No new secret in client code or env vars with public prefixes.
 - [ ] LLM features: user content cannot trigger side-effect tools without confirmation.
+- [ ] Tools the app exposes (MCP, WebMCP): every `readOnlyHint` tool has a
+      test proving its handler performs no writes; every `destructiveHint:
+      false` tool, a test proving it never deletes or overwrites; WebMCP tools
+      with irreversible effects set `consequentialHint`.
 
 API-backed app (Playwright):
 
@@ -130,6 +134,33 @@ test('B cannot read or change A order; anon sees nothing', async () => {
   expect((await createClient(url, anon).from('orders').select()).data).toEqual([]);
 });
 ```
+
+Tool annotation honesty: test the handler with spies, not with a
+before/after snapshot of the database (a snapshot misses emails, payments,
+queued jobs and writes of an unchanged value). Passing is evidence, not proof:
+the stronger fix is giving read-only tools read-only clients (02 §6). Build
+handlers from their dependencies so tests can inject spies:
+
+```ts
+// tools.ts — handlers built from their clients (also what makes a read-only client possible)
+export const createHandlers = (deps: { db: Db; mail: Mail }) => ({
+  get_order_status: async ({ orderId }: { orderId: string }) => { /* ... */ },
+});
+
+// tools.test.ts
+const WRITE_SQL = /^\s*(insert|update|delete|merge|upsert|truncate|alter|drop|create)\b/i;
+test('get_order_status (readOnlyHint) performs no writes', async () => {
+  const writes: string[] = [];
+  const db = { query: async (sql: string) => { if (WRITE_SQL.test(sql)) writes.push(sql); return { rows: [] }; } };
+  const mail = { send: async () => { writes.push('mail.send'); } };
+  const { get_order_status } = createHandlers({ db, mail } as any);
+  for (const orderId of ['o1', 'o2', 'missing']) await get_order_status({ orderId });
+  expect(writes).toEqual([]);
+});
+```
+
+For ORMs, spy on their write methods (`insert`, `update`, `delete`,
+`upsert`, `create`) the same way.
 
 Database-level tests: pgTAP in `supabase/tests/*.sql` with
 `set local role authenticated; set local request.jwt.claims = '{"sub":"<uuid>"}'`

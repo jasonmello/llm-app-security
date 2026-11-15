@@ -212,7 +212,10 @@ Severity guide:
 - **info**: observations, good practices to adopt.
 
 High vs medium: does the flaw fully defeat an explicit control (high) or only
-weaken it (medium)? Chained flaws: rate a flaw behind a broken control at its
+weaken it (medium)? A dishonest tool annotation, or a missing WebMCP `consequentialHint` (02 §6), is high
+when the tool is exposed to a client that skips confirmation on that hint
+(published MCP connector, ChatGPT, WebMCP) and has a real side effect; medium
+when only the app's own loop, which always confirms, uses it. Chained flaws: rate a flaw behind a broken control at its
 reachable impact today and say it depends on finding #N (one level lower once
 that is fixed).
 

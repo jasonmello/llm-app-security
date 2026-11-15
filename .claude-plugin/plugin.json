@@ -1,7 +1,7 @@
 {
   "name": "llm-app-security",
   "displayName": "J.A.S.O.N. — LLM App Security",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "J.A.S.O.N. (Just Audit, Secure, Observe, Notify): defensive security for apps built with LLMs and coding agents. Pre-deploy attacker check and a deploy gate that blocks on critical findings, audits, honeytokens, prompt-injection defense and PR gates.",
   "author": {
     "name": "jasonmello",

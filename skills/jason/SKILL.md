@@ -42,8 +42,9 @@ without login and databases without rules" — in any language. Answer in the
 user's language. Best moment: before the first deploy; then before each one.
 
 **Start with the ship-gate** (command in "Scripts"; read-only, runs no target
-code). Its blockers are deterministic: report every one in the table as
-critical or high, and they decide the verdict on their own.
+code). Its blockers are deterministic and decide the verdict on their own
+(do not deploy). Report each one in the table; its severity still follows the
+01 guide (a blocked missing rate limit is still medium).
 
 Read-only: no files changed (not even `security/`) unless asked. Allowed:
 read-only local commands (grep, find, git log -p, and this skill's own
@@ -90,6 +91,10 @@ plus local storage. Write "not applicable: <reason>" when one does not apply.
    row at that tool: missing ownership or amount check on a money tool,
    unrestricted email recipient, model-written SQL, unrestricted URL fetch
    ([04 §4](04-AGENT-DEFENSE.md), 02 §6). Different root causes, different rows.
+   Tools the app exposes (MCP server, WebMCP): a `readOnlyHint` tool whose
+   handler writes, a `destructiveHint: false` tool that deletes or overwrites,
+   or a WebMCP tool with irreversible effects and no `consequentialHint`, is
+   its own row (02 §6).
 6. **Agent injection and suspicious deps**: run the scan in
    [04 §1](04-AGENT-DEFENSE.md) and read agent instruction files in full;
    check unfamiliar dependency names for typos and hallucinations (02 §7).

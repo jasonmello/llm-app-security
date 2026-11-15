@@ -108,6 +108,9 @@ security guidance (check current versions on owasp.org). Minimum bar:
 - Tools run with the **end user's** permissions, not a service account.
 - Side-effecting tools (send, pay, delete, post) require explicit user
   confirmation outside the model's control.
+- Third-party MCP/WebMCP tools: never skip confirmation because a tool says
+  `readOnlyHint: true`; annotations from servers you do not control are
+  untrusted. Decide from your own allowlist.
 - Untrusted content (emails, web pages, uploaded files) is marked as data in
   the prompt and never concatenated into the system prompt.
 - Model output is validated against a schema before use; never `eval`'d,
