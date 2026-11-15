@@ -11,7 +11,8 @@ set -euo pipefail
 cd "${1:-.}"
 [ -d supabase/migrations ] || { echo "no supabase/migrations: skipped"; exit 0; }
 [ -n "$(find supabase/migrations -name '*.sql' -print -quit)" ] || { echo "no .sql migrations: skipped"; exit 0; }
-find supabase/migrations -name '*.sql' -print0 | sort -z | xargs -0 -r perl -0777 -e '
+# Exit 1 on failure on every platform (GNU xargs turns a child's exit 1 into 123).
+if find supabase/migrations -name '*.sql' -print0 | sort -z | xargs -0 -r perl -0777 -e '
   my $id = qr/(?:"(?:[^"]|"")+"|[A-Za-z_][A-Za-z0-9_\$]*)/;
   my (%rls, %src); my $fail = 0;
   sub norm { my $n = shift; $n =~ /^"/ ? substr($n,1,-1) =~ s/""/"/gr : lc $n }
@@ -37,3 +38,4 @@ find supabase/migrations -name '*.sql' -print0 | sort -z | xargs -0 -r perl -077
   print $n ? "OK: RLS enabled on all $n public table(s)\n" : "no public tables found in migrations\n" unless $fail;
   exit $fail;
 '
+then exit 0; else exit 1; fi
