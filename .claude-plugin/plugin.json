@@ -1,6 +1,6 @@
 {
   "name": "llm-app-security",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Defensive security for apps built with LLMs and coding agents: pre-launch attacker check, audits, honeytokens, prompt-injection defense and PR gates.",
   "author": { "name": "jasonmello", "url": "https://github.com/jasonmello" },
   "homepage": "https://github.com/jasonmello/llm-app-security",

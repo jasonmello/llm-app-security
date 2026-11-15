@@ -6,8 +6,7 @@
 
 **A defensive security skill for apps built with LLMs and coding agents.**
 Tested with Claude Code (skill or plugin) and OpenAI Codex CLI (through
-`AGENTS.md`); other agents that load `SKILL.md` skills or read `AGENTS.md`
-(Cursor, Gemini CLI…) should work but have not been tested. A *skill* is a folder of instructions and scripts your coding
+`AGENTS.md`). A *skill* is a folder of instructions and scripts your coding
 agent loads when a request matches it. The skill itself is written in English;
 the agent answers in your language.
 
@@ -70,7 +69,7 @@ security audit with llm-app-security"*.
 /plugin install llm-app-security@llm-app-security
 ```
 
-**Or copy the folder** (any agent):
+**Or copy the folder** (Claude Code or Codex):
 
 ```bash
 git clone https://github.com/jasonmello/llm-app-security.git
@@ -87,9 +86,9 @@ can ask for "llm-app-security" by name.
 |---|---|
 | Claude Code (all projects) | `~/.claude/skills/` |
 | Claude Code (one project) | `.claude/skills/` |
-| Codex, Cursor, Gemini CLI and others | the agent's skills directory, or reference `SKILL.md` from the project's `AGENTS.md` |
+| OpenAI Codex CLI | `.skills/` in your project, referenced from `AGENTS.md` (snippet below) |
 
-For Codex (and other agents that read `AGENTS.md`), copy the folder to
+For Codex, copy the folder to
 `.skills/llm-app-security` in your project and add to `AGENTS.md`:
 
 ```markdown
@@ -142,8 +141,7 @@ MIT. See [LICENSE](LICENSE) and [DISCLAIMER.md](DISCLAIMER.md).
 
 **Uma skill de segurança defensiva para apps feitos com LLMs e agentes de código.**
 Testada no Claude Code (como skill ou plugin) e no OpenAI Codex CLI (via
-`AGENTS.md`); outros agentes que carregam skills `SKILL.md` ou leem
-`AGENTS.md` (Cursor, Gemini CLI…) devem funcionar, mas não foram testados. Uma *skill* é uma pasta de instruções e scripts
+`AGENTS.md`). Uma *skill* é uma pasta de instruções e scripts
 que o seu agente de código carrega quando o pedido combina com ela. A skill em
 si é escrita em inglês; o agente responde no seu idioma.
 
@@ -208,7 +206,7 @@ de segurança completa com a llm-app-security"*.
 /plugin install llm-app-security@llm-app-security
 ```
 
-**Ou copie a pasta** (qualquer agente):
+**Ou copie a pasta** (Claude Code ou Codex):
 
 ```bash
 git clone https://github.com/jasonmello/llm-app-security.git
@@ -225,9 +223,9 @@ pedir a "llm-app-security" pelo nome.
 |---|---|
 | Claude Code (todos os projetos) | `~/.claude/skills/` |
 | Claude Code (um projeto) | `.claude/skills/` |
-| Codex, Cursor, Gemini CLI e outros | o diretório de skills do agente, ou referencie o `SKILL.md` no `AGENTS.md` do projeto |
+| OpenAI Codex CLI | `.skills/` no seu projeto, referenciada no `AGENTS.md` (trecho abaixo) |
 
-No Codex (e em outros agentes que leem `AGENTS.md`), copie a pasta para
+No Codex, copie a pasta para
 `.skills/llm-app-security` no seu projeto e adicione ao `AGENTS.md`:
 
 ```markdown
@@ -281,8 +279,7 @@ MIT. Veja [LICENSE](LICENSE) e [DISCLAIMER.md](DISCLAIMER.md).
 
 **Una skill de seguridad defensiva para apps construidas con LLMs y agentes de programación.**
 Probada en Claude Code (como skill o plugin) y en OpenAI Codex CLI (vía
-`AGENTS.md`); otros agentes que cargan skills `SKILL.md` o leen `AGENTS.md`
-(Cursor, Gemini CLI…) deberían funcionar, pero no se han probado. Una *skill* es una carpeta de instrucciones y
+`AGENTS.md`). Una *skill* es una carpeta de instrucciones y
 scripts que tu agente de programación carga cuando la solicitud coincide con
 ella. La skill en sí está escrita en inglés; el agente responde en tu idioma.
 
@@ -346,7 +343,7 @@ auditoría de seguridad completa con llm-app-security"*.
 /plugin install llm-app-security@llm-app-security
 ```
 
-**O copia la carpeta** (cualquier agente):
+**O copia la carpeta** (Claude Code o Codex):
 
 ```bash
 git clone https://github.com/jasonmello/llm-app-security.git
@@ -363,9 +360,9 @@ puedes pedir "llm-app-security" por su nombre.
 |---|---|
 | Claude Code (todos los proyectos) | `~/.claude/skills/` |
 | Claude Code (un proyecto) | `.claude/skills/` |
-| Codex, Cursor, Gemini CLI y otros | el directorio de skills del agente, o haz referencia a `SKILL.md` desde el `AGENTS.md` del proyecto |
+| OpenAI Codex CLI | `.skills/` en tu proyecto, referenciada desde `AGENTS.md` (fragmento abajo) |
 
-En Codex (y otros agentes que leen `AGENTS.md`), copia la carpeta a
+En Codex, copia la carpeta a
 `.skills/llm-app-security` en tu proyecto y añade a `AGENTS.md`:
 
 ```markdown

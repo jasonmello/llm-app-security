@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.2.1] - 2026-11-15
+
+### Changed
+- README lists only the agents actually tested (Claude Code, OpenAI Codex CLI);
+  Gemini CLI and Cursor removed.
+
+### Added
+- Plugin icon. The official `claude plugin validate` passes with no warnings
+  and now runs in CI (pinned Claude Code version).
+
 ## [0.2.0] - 2026-11-15
 
 ### Added
@@ -42,5 +52,6 @@ First public release.
   with an answer key.
 - README in English, Portuguese (Brazil) and Spanish.
 
+[0.2.1]: https://github.com/jasonmello/llm-app-security/releases/tag/v0.2.1
 [0.2.0]: https://github.com/jasonmello/llm-app-security/releases/tag/v0.2.0
 [0.1.0]: https://github.com/jasonmello/llm-app-security/releases/tag/v0.1.0
