@@ -4,6 +4,69 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.5.0] - 2026-11-15
+
+Result of running J.A.S.O.N. on its own repository: 23 findings, all confirmed
+by an adversarial verifier, all fixed here with regression tests.
+
+### Security
+- **v0.4.0 users: re-copy `scripts/ci/ship-gate.cjs`.** In 0.4.0 the gate's
+  own source contained strings it treats as evidence of a rate limiter, so a
+  copy placed in the repo (as documented) silently disabled `SG-RATE-LIMIT`.
+  The gate's patterns are now assembled so its source never matches itself.
+- `check-honeytokens.cjs` ran `git` inside the audited repo, so a planted
+  `core.fsmonitor` command would execute. It now runs git outside the repo with
+  fsmonitor disabled (same as the gate).
+- A placeholder word anywhere on the same line (e.g. `// EXAMPLE`) hid a real
+  secret from the gate. Placeholders are now judged on the value only.
+- The honeytoken inventory exempted whole files from every check. Committed
+  bait values are now registered as bare SHA-256 hashes in `.jason/gate.json`
+  (`--honeytoken-hashes` prints them); the list names no files, and every other
+  value, line and file is still checked.
+- Files starting with a UTF-16 byte-order mark, or containing NUL bytes, could
+  hide secrets; both decodings are now scanned and NULs are stripped.
+- Any file named like a lockfile was skipped; now only real lockfiles next to
+  their manifest and outside public/build folders are.
+
+### Changed
+- Gate inputs moved to the committed `.jason/` folder (`gate.json`,
+  `waivers.json`): `security/` is git-ignored, so CI never saw them. The old
+  `security/ship-gate.json` and `security/waivers.json` are ignored (with a
+  warning) so a waiver outside CODEOWNERS can never apply. Put `.jason/` and
+  `scripts/ci/` under CODEOWNERS.
+- Templates are safe to copy as-is: `gate.json` has a placeholder that blocks
+  until filled in, `waivers.json` is empty.
+- `rate_limit.covers` now narrows a declared edge limiter; without it every
+  route is listed as an assumed-covered warning.
+- Waivers reject placeholder or bot owners; `target` matches a path prefix.
+- Secret scan now covers `.claude/`, `vendor/`, `coverage/`, build caches,
+  UTF-16 files and files named `*.lock` that are not real lockfiles; text-like
+  files with NUL bytes are reported.
+- RLS check rebuilt on a single-pass SQL lexer (strings, quoted identifiers,
+  nested comments, dollar quotes): tracks renames, `SET SCHEMA`, multi-table
+  `DROP`, multi-action `ALTER`, `SELECT INTO`; reads large migrations
+  (unreadable ones block); flags materialized views and open policies written
+  as `((true))`, `true or …` or `1=1`. `rls-guard.sh` gets the string and
+  `DROP TABLE` fixes and follows a symlinked migrations folder.
+- Rate limit: routes in subfolders named like tool dirs are checked;
+  devDependencies and examples/docs/tests no longer count as a limiter; the
+  output says where the limiter evidence came from; Fastify/Hono-style routes
+  and more LLM SDKs (Gemini, Groq, Mistral, AI SDK, LangChain) are detected.
+- Firebase: comment markers inside strings no longer hide rules, parenthesized
+  `true` is caught, and rules files named in `firebase.json` are checked.
+- Inputs (config, waivers, findings, migrations) that are symlinks pointing
+  outside the repository are refused; an empty waiver `target` is rejected.
+- Threat model stated in 07: the gate catches mistakes, not a committer who
+  deliberately evades it; CODEOWNERS and the `db-rules` job cover that.
+- Firebase: unconditional and `1 == 1` rules block; write rules without
+  `request.auth` warn.
+- Linear-time parsing guards against crafted files (JWT, SQL dollar quotes,
+  line numbers); per-file match cap.
+- `mini-schema` ignores inherited properties (`__proto__`, `constructor`).
+- Pre-deploy output lists every waived item, ignored path and declared limiter
+  next to the gate result. 04 §1 scan works in zsh. `deploy-gate.yml` runs the
+  gate again after the build.
+
 ## [0.4.0] - 2026-11-15
 
 A review at launch is too late and warnings get shipped over: J.A.S.O.N. now
@@ -104,6 +167,7 @@ First public release.
   with an answer key.
 - README in English, Portuguese (Brazil) and Spanish.
 
+[0.5.0]: https://github.com/jasonmello/llm-app-security/releases/tag/v0.5.0
 [0.4.0]: https://github.com/jasonmello/llm-app-security/releases/tag/v0.4.0
 [0.3.0]: https://github.com/jasonmello/llm-app-security/releases/tag/v0.3.0
 [0.2.1]: https://github.com/jasonmello/llm-app-security/releases/tag/v0.2.1

@@ -24,6 +24,12 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { persist-credentials: false }
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: 24 }
+      # Build first, then run the gate again: this run sees the bundles
+      # (dist/, .next/static) and public env values baked in at build time.
+      - run: npm ci && npm run build
+      - run: node scripts/ci/ship-gate.cjs .
       # Replace with your deploy, e.g. Vercel/Netlify CLI, supabase db push,
       # firebase deploy, eas build. Keep deploy secrets in the environment.
       - run: echo "deploy here"

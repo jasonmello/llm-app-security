@@ -128,4 +128,8 @@ Template: [templates/incident-runbook.md](templates/incident-runbook.md). In sho
    the repo (e.g. `security/honeytokens.md`), it is a map of the bait: add
    `security/` to `.dockerignore`, `.vercelignore` and similar files too; the
    script checks this.
+6. If the project uses the deploy gate (07) and bait is committed, register
+   each bait value as a bare hash in `.jason/gate.json` → `honeytokens`
+   (command in SKILL.md "Scripts"), otherwise the gate blocks on it as a leaked
+   secret. Only that exact value is exempt, and the hash names no file.
 6. Ask the user to trigger a test alert for each.

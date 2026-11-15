@@ -107,7 +107,10 @@ plus local storage. Write "not applicable: <reason>" when one does not apply.
    warning the user can ship over protects nothing), plus one sentence on the worst thing an attacker could do today. When most of what
    you checked is sound, say so in one sentence, limited to the covered areas.
    Then one line per big-three item (found / clean / not applicable: reason)
-   and one line with the ship-gate result (PASS / BLOCKED: N).
+   and one line with the ship-gate result (PASS / BLOCKED: N), followed by
+   everything that made a PASS possible: each WAIVED item (owner, expiry),
+   each ignore_paths entry and each declared limiter. Flag waivers or gate
+   config changed in the diff under review.
 2. Table ordered by severity (scale in [01-AUDIT.md](01-AUDIT.md) phase 4):
    `# · severity · what · where (file:line) · how to fix · effort`.
    Effort in rough time (10 min, 1 h, 1 day). One row per root cause: when
@@ -179,7 +182,8 @@ user's yes: both write files.
 ## Outputs (full audit)
 
 Write into `security/` at the repo root (create it; add nothing secret there).
-These files describe unfixed vulnerabilities. Before writing, run
+The gate's inputs live elsewhere: `.jason/gate.json` and `.jason/waivers.json`
+are committed (07). `security/` holds reports only. These files describe unfixed vulnerabilities. Before writing, run
 `git check-ignore -q security/`; if it is not ignored, ask the user to add it
 to `.gitignore` (or `.git/info/exclude`) or to pick a folder outside the repo.
 In a public repo never commit findings until they are fixed. Not a git repo:
@@ -192,7 +196,11 @@ skip the check, note it in REPORT.md and warn the user not to copy
 - `findings.json`: confirmed / needs_validation / rejected
   ([schema](templates/findings.schema.json)).
 - `REPORT.md`: in the user's language, ordered by severity, each with a fix.
-- `honeytokens.md` (only if module 03 ran, private repos only): bait inventory.
+- `honeytokens.md` (only if module 03 ran): bait inventory. Keep it outside
+  the repo for public repos. Committed bait values are registered as bare
+  hashes in `.jason/gate.json` (07), which name no files.
+- `.jason/findings.json`: only if the user decides to enforce findings in CI
+  in a **private** repo (07 "Threat model"). Never in a public repo.
 
 ## Scripts
 
@@ -210,6 +218,8 @@ node "${CLAUDE_SKILL_DIR}/scripts/check-honeytokens.cjs" <inventory.md> --root <
 bash "${CLAUDE_SKILL_DIR}/scripts/rls-guard.sh" <repo>
 # Deploy gate (07): exit 1 = do not deploy; copy to scripts/ci/ship-gate.cjs in the target repo
 node "${CLAUDE_SKILL_DIR}/scripts/ship-gate.cjs" <repo>
+# Hash committed bait for .jason/gate.json → honeytokens (03, 07)
+node "${CLAUDE_SKILL_DIR}/scripts/ship-gate.cjs" --honeytoken-hashes <bait-file>
 ```
 
 ## Working with the user

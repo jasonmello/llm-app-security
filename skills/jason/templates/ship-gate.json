@@ -1,8 +1,0 @@
-{
-  "ignore_paths": ["examples/", "docs/"],
-  "public_tables": ["products"],
-  "rate_limit": {
-    "where": "Cloudflare WAF rate-limiting rule 'auth-and-chat' (10 requests/min per IP)",
-    "covers": ["/api/login", "/api/chat"]
-  }
-}

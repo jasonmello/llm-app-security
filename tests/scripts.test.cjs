@@ -253,3 +253,37 @@ test('honeytokens: COPY ./ variant and inventory exposure', () => {
   write(root, '.dockerignore', 'password.txt\nsecurity/\n');
   assert.deepStrictEqual(check(root, inv).problems, []);
 });
+
+
+test('mini-schema ignores inherited properties (__proto__, constructor)', () => {
+  const { validate } = require('../skills/jason/scripts/lib/mini-schema.cjs');
+  const schema = { type: 'object', additionalProperties: false, required: ['toString'], properties: { a: { type: 'string' } } };
+  const errs = validate(schema, JSON.parse('{"constructor": 1, "__proto__": {"x":1}}')).join('\n');
+  assert.match(errs, /unexpected "constructor"/);
+  assert.match(errs, /missing "toString"/);
+});
+
+test('check-honeytokens never runs the audited repo\'s git hooks (core.fsmonitor)', () => {
+  const { spawnSync, execFileSync } = require('node:child_process');
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'fsm-'));
+  execFileSync('git', ['init', '-q'], { cwd: root });
+  const marker = path.join(root, 'PWNED');
+  execFileSync('git', ['config', 'core.fsmonitor', `touch ${marker}; echo`], { cwd: root });
+  fs.mkdirSync(path.join(root, 'security'));
+  fs.writeFileSync(path.join(root, 'password.txt'), 'bait');
+  fs.writeFileSync(path.join(root, 'security/honeytokens.md'), '| ID | Type | Bait location | Scope |\n|---|---|---|---|\n| HT-01 | AWS | `password.txt` | local |\n');
+  spawnSync(process.execPath, [path.join(__dirname, '..', 'skills/jason/scripts/check-honeytokens.cjs'), '--root', root], { encoding: 'utf8' });
+  assert.ok(!fs.existsSync(marker), 'fsmonitor command was executed');
+});
+
+test('rls-guard follows a symlinked migrations folder', () => {
+  const { spawnSync } = require('node:child_process');
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'rls-'));
+  fs.mkdirSync(path.join(root, 'real'));
+  fs.writeFileSync(path.join(root, 'real/1.sql'), 'create table a (id int);\n');
+  fs.mkdirSync(path.join(root, 'app/supabase'), { recursive: true });
+  fs.symlinkSync(path.join(root, 'real'), path.join(root, 'app/supabase/migrations'));
+  const r = spawnSync('bash', [path.join(__dirname, '..', 'skills/jason/scripts/rls-guard.sh'), path.join(root, 'app')], { encoding: 'utf8' });
+  assert.strictEqual(r.status, 1);
+  assert.match(r.stdout, /public\.a has no RLS/);
+});

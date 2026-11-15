@@ -13,15 +13,16 @@ from the repo root (POSIX shell, macOS and Linux, no extra installs). Exclude
 this skill's own folder by path if it is vendored in the repo.
 
 ```bash
-EX='--exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=build --exclude-dir=.next --exclude-dir=vendor'
+# Array, so the exclusions work in both bash and zsh (a quoted string does not split in zsh)
+EX=(--exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=build --exclude-dir=.next --exclude-dir=vendor)
 # 1. Overrides, text addressed to agents, concealment
-grep -rniIE $EX "(ignore|disregard|forget|override)( all| any| your| the)? (previous|prior|above|earlier) (instructions|guidance|rules)|(note|message|instructions?) (to|for) (the |all )?((ai|llm|coding) ){0,2}(agents?|assistants?)|(ai|llm|coding) (agents?|assistants?)[^.]{0,40}(must|should)|do not (tell|mention|report|flag)( the user)?|(automated|ai) reviewers?" . | head -100
+grep -rniIE "${EX[@]}" "(ignore|disregard|forget|override)( all| any| your| the)? (previous|prior|above|earlier) (instructions|guidance|rules)|(note|message|instructions?) (to|for) (the |all )?((ai|llm|coding) ){0,2}(agents?|assistants?)|(ai|llm|coding) (agents?|assistants?)[^.]{0,40}(must|should)|do not (tell|mention|report|flag)( the user)?|(automated|ai) reviewers?" . | head -100
 # 2. Exfiltration and remote execution (lower confidence: review each hit)
-grep -rniIE $EX "\b(print|output|reveal|cat|send|upload)\b[^.]{0,40}(\.env|secrets?|credentials?|api[_ -]?keys?|id_rsa|\.ssh|\.aws)|(curl|wget)[^|]{0,200}\| *(ba|z)?sh|base64 (-d|--decode)" . | head -100
+grep -rniIE "${EX[@]}" "\b(print|output|reveal|cat|send|upload)\b[^.]{0,40}(\.env|secrets?|credentials?|api[_ -]?keys?|id_rsa|\.ssh|\.aws)|(curl|wget)[^|]{0,200}\| *(ba|z)?sh|base64 (-d|--decode)" . | head -100
 # 3. Invisible characters: zero-width, bidi controls/isolates, BOM, Unicode tags (byte-level, survives binary files)
 find . -type f -not -path '*/node_modules/*' -not -path '*/.git/*' -exec perl -ne 'print "$ARGV:$.: $_" if /\xE2\x80[\x8B-\x8F\xAA-\xAE]|\xE2\x81[\xA0-\xA4\xA6-\xA9]|\xEF\xBB\xBF|\xF3\xA0[\x80\x81]/; close ARGV if eof' {} + | head -50
 # 4. HTML comments in markdown (hidden when rendered on GitHub)
-grep -rnI $EX --include="*.md" "<!--" . | head -50
+grep -rnI "${EX[@]}" --include="*.md" "<!--" . | head -50
 ```
 
 Say when a command errored or its output was truncated by `head`. The pipe

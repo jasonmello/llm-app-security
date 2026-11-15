@@ -9,6 +9,7 @@
 // Exit 0 = ok, 1 = problems found, 2 = usage error.
 const fs = require('node:fs');
 const path = require('node:path');
+const os = require('node:os');
 const { execFileSync } = require('node:child_process');
 
 // ---------- inventory ----------
@@ -130,7 +131,10 @@ function walkFor(dir, base, acc, depth) {
 
 function gitTracked(root, rel) {
   try {
-    execFileSync('git', ['-C', root, 'ls-files', '--error-unmatch', '--', rel], { stdio: 'ignore' });
+    // Started outside the repo with fsmonitor disabled: never runs code from the audited repo.
+    execFileSync('git', ['-c', 'core.fsmonitor=false', '-C', root, 'ls-files', '--error-unmatch', '--', rel], {
+      stdio: 'ignore', cwd: os.tmpdir(), env: { ...process.env, GIT_CONFIG_NOSYSTEM: '1' },
+    });
     return true;
   } catch { return false; }
 }

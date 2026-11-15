@@ -1,0 +1,9 @@
+{
+  "ignore_paths": [],
+  "public_tables": [],
+  "rate_limit": {
+    "where": "<describe your edge limiter, e.g. Cloudflare WAF rule name and limit, or delete this rate_limit block>",
+    "covers": ["/api/login", "/api/chat"]
+  },
+  "honeytokens": []
+}

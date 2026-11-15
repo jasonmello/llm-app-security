@@ -54,7 +54,9 @@ Ready-to-copy workflow: [templates/pr-gates.yml](templates/pr-gates.yml)
   pass** (the workflow lives in a repo the PR cannot edit).
 - **CODEOWNERS on sensitive paths**: `.github/`, CI config,
   `supabase/migrations/`, `firestore.rules`, auth code, `package.json`/lockfiles,
-  `AGENTS.md`/`CLAUDE.md`.
+  `AGENTS.md`/`CLAUDE.md`, and the deploy gate itself: `.jason/` (config,
+  waivers) and `scripts/ci/`. Otherwise an agent PR can add a waiver or an
+  edge-limiter declaration and turn its own required check green.
 - **Agent-authored PRs get the same gates.** No bypass actors for bots, no
   auto-merge on agent PRs. Agents never use the owner's PAT (admin tokens
   inherit bypass): fine-grained token or GitHub App without admin. Keep

@@ -21,18 +21,33 @@ changes how they ship.
 The pre-deploy check (SKILL.md) runs layer 1 and reports its result next to
 its own findings.
 
+**Threat model.** The gate catches mistakes by people and coding agents,
+including a hijacked agent whose edit gets merged. It is not a defense against
+someone with commit rights who deliberately writes code to slip past a regex:
+CODEOWNERS on `.jason/` and `scripts/ci/`, human review, and the database-level
+`db-rules` job (06, `templates/pr-gates.yml`) cover that. Its migration parsing
+is a heuristic; the `db-rules` job querying `pg_class` is authoritative.
+
+Findings (layer 2) block wherever `security/findings.json` exists: locally and
+in the pre-deploy check. In CI and host builds it is absent (git-ignored), so
+in public repos those builds check layer 1 only. A private repo can commit a
+copy as `.jason/findings.json` **if the user decides to**; it stays in git
+history if the repo ever goes public, and must be excluded from deploy
+contexts like any other sensitive file.
+
 ## What blocks
 
 | Check | Blocks when |
 |---|---|
 | `SG-SECRET-PUBLIC-ENV` | a secret-type variable has a public prefix (`NEXT_PUBLIC_`, `VITE_`, `EXPO_PUBLIC_`…) in an env file, or client code reads one |
-| `SG-SECRET-VALUE` | a real-looking live secret (Stripe live, Supabase `sb_secret_`/`service_role` JWT, OpenAI, Anthropic, AWS, GitHub, private key, DB URL with password) is in any file, including build output when the gate runs after the build. Skipped: placeholders, listed honeytokens, local-dev DB URLs (localhost, docker service names, `postgres:postgres`) and the public Supabase CLI demo key. **Cannot be waived: rotate it.** |
+| `SG-SECRET-VALUE` | a real-looking live secret (Stripe live, Supabase `sb_secret_`/`service_role` JWT, OpenAI, Anthropic, AWS, GitHub, private key, DB URL with password) is in any file, including build output when the gate runs after the build. Scans every file except dependency folders and real lockfiles (next to their manifest, outside public/build folders); UTF-16 and NUL-padded files are decoded, not skipped. Skipped: values that are themselves placeholders (`EXAMPLE`, `NOTREAL`…; words elsewhere on the line do not count), honeytoken values registered by hash in `.jason/gate.json`, local-dev DB URLs (localhost, docker service names, `postgres:postgres`) and the public Supabase CLI demo key. **Cannot be waived: rotate it.** |
 | `SG-ENV-COMMITTED` | a real `.env` file is tracked by git (warning when the folder is not a git repo and `.env` is not ignored) |
-| `SG-DB-NO-RLS` | a public Supabase table has RLS off after all migrations, or a public view lacks `security_invoker = true` (views run as their owner and ignore RLS) |
+| `SG-DB-NO-RLS` | a public Supabase table has RLS off after all migrations (tracked through renames, `SET SCHEMA`, multi-table `DROP`, multi-action `ALTER`, `SELECT INTO`; text inside strings and comments never counts), a public view lacks `security_invoker = true`, a materialized view is public, or a migration cannot be read |
 | `SG-DB-OPEN-POLICY` | a Supabase policy is `using (true)` / `with check (true)`, or only requires a signed-in user (`auth.role() = 'authenticated'`, `auth.uid() is not null`): with open signup that is anyone. SELECT-only on a table listed in `public_tables` is allowed |
 | `SG-DB-OPEN-RULES` | Firebase rules `if true` or with no condition at all (`allow read, write;`), test-mode `request.time < timestamp.date(...)`, or Realtime Database `".read"/".write": true` |
-| `SG-RATE-LIMIT` | auth (login, signup, OTP, reset…) or LLM endpoints exist (including routes that call an LLM through a helper module) and no rate limiter is imported or called, and none is declared in `security/ship-gate.json`. One item per route, so a waiver can target one. A comment saying "TODO rate limit" does not count |
-| `SG-FINDING` | `security/findings.json` has a confirmed critical or high finding |
+| `SG-RATE-LIMIT` | auth (login, signup, OTP, reset…) or LLM endpoints exist (including routes that call an LLM through a helper module) and no rate limiter is imported or called, and none is declared in `.jason/gate.json` (`rate_limit.where`, narrowed by `covers`). One item per route, so a waiver can target one. A comment saying "TODO rate limit" does not count |
+| `SG-FINDING` | `security/findings.json` (local) or `.jason/findings.json` (committed, private repos) has a confirmed critical or high finding |
+| `SG-CONFIG` / `SG-WAIVERS` | the gate's own inputs are invalid: placeholder `rate_limit.where`, a waiver with a placeholder or bot owner, a bad or expired date |
 
 Limits, stated plainly: the rate-limit check is a heuristic (it detects that a
 limiter exists, not that it covers every route); missing auth on a route, IDOR
@@ -70,21 +85,44 @@ blockers", not "secure".
 
 ## Configuration and waivers
 
-`security/ship-gate.json` ([template](templates/ship-gate.json)):
-`ignore_paths` (fixtures, docs: skipped by every check except secret scanning,
-where hits become warnings so nothing leaks silently), `public_tables` (tables
-and views public by design), `rate_limit.where` (limiter at the edge:
-Cloudflare, API gateway…).
+The gate reads its inputs from **`.jason/`**, which is committed (unlike
+`security/`, which holds audit reports and stays out of git). Without that, CI
+would never see waivers or config. Put `.jason/` and `scripts/ci/` under
+CODEOWNERS (06 §3) so an agent PR cannot quietly loosen the gate.
+
+`.jason/gate.json` ([template](templates/gate.json); the template blocks until
+you fill it in):
+
+- `ignore_paths`: fixtures, docs. Skipped by every check except secret
+  scanning, where hits become warnings, so nothing leaks silently.
+- `public_tables`: tables and views public by design.
+- `rate_limit.where`: the limiter at the edge (Cloudflare, API gateway…); a
+  placeholder or empty value blocks. `covers`: path fragments of the routes it
+  protects. Without `covers`, every route is assumed covered and each is
+  listed as a warning.
+- `honeytokens`: a list of SHA-256 hashes of committed bait values
+  (`node ship-gate.cjs --honeytoken-hashes <file>` prints them). Only those
+  exact values are exempt, wherever they appear; every other value, line and
+  file is still checked. The list names no files and reveals no values, so it
+  is not a map of the bait. Private repos only (module 03).
+
+Findings in CI: see "Threat model" above. The agent asks before committing
+`.jason/findings.json`, and never does so in a public repo.
+
+The output always lists waived items, ignored paths, matched honeytokens and
+declared limiters, so a PASS can be audited.
 
 Without git metadata (archives, some build containers) the committed-`.env`
 check falls back to: block when a real `.env` is present and `CI` is set,
 otherwise warn.
 
-`security/waivers.json` ([template](templates/waivers.json)) records a
+`.jason/waivers.json` ([template](templates/waivers.json), empty) records a
 conscious decision to ship despite a blocker:
 
-- Every waiver needs `check` (or `finding:<fingerprint>`), `reason`, `owner`,
-  `expires` (YYYY-MM-DD); optional `target` narrows it to a file.
+- Every waiver needs `check` (or `finding:<fingerprint>`), `reason`, `owner`
+  (a person, not a placeholder or a bot), `expires` (YYYY-MM-DD); optional
+  `target` narrows it to a path prefix (or a table name). Example:
+  `{ "check": "SG-RATE-LIMIT", "target": "app/api/chat", "reason": "invite-only beta, limiter lands before launch", "owner": "jason", "expires": "2026-12-15" }`
 - Expired waivers block. Waivers that match nothing are reported.
 - Keep them short (30 days or less) and tied to a concrete plan; more than 90
   days out is reported.

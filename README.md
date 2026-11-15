@@ -91,8 +91,8 @@ fails the deploy on Vercel, Netlify, Cloudflare Pages and similar hosts:
 
 It checks exposed secrets (env prefixes, live keys, bundles), Supabase RLS,
 open policies and views, Firebase rules, rate limits on auth/LLM endpoints and
-confirmed critical findings. Exit 1 means do not deploy. Shipping anyway takes
-an explicit, expiring waiver with a reason and an owner; leaked live secrets
+confirmed critical findings (those block wherever the audit's findings file exists: locally, and in CI only for private repos that choose to commit it). Exit 1 means do not deploy. Shipping anyway takes
+an explicit, expiring waiver (`.jason/waivers.json`, committed and owned via CODEOWNERS) with a reason and an owner; leaked live secrets
 cannot be waived. Details, GitHub Actions, Firebase and Expo setups:
 `skills/jason/07-DEPLOY-GATE.md`.
 
@@ -265,8 +265,8 @@ um bloqueio derrube o deploy na Vercel, Netlify, Cloudflare Pages e hosts pareci
 
 Ele verifica segredos expostos (prefixos de env, chaves reais, bundles), RLS,
 políticas e views abertas no Supabase, regras do Firebase, rate limit em
-endpoints de auth/LLM e achados críticos confirmados. Saída 1 significa: não faça
-o deploy. Para subir mesmo assim, é preciso um waiver explícito, com motivo,
+endpoints de auth/LLM e achados críticos confirmados (esses bloqueiam onde o arquivo de achados da auditoria existir: localmente e, no CI, só em repositórios privados que optarem por versioná-lo). Saída 1 significa: não faça
+o deploy. Para subir mesmo assim, é preciso um waiver explícito (`.jason/waivers.json`, commitado e protegido por CODEOWNERS), com motivo,
 responsável e data de validade; segredos reais vazados não podem ser
 dispensados. Detalhes e configurações para GitHub Actions, Firebase e Expo:
 `skills/jason/07-DEPLOY-GATE.md`.
@@ -440,8 +440,8 @@ que un bloqueo haga fallar el deploy en Vercel, Netlify, Cloudflare Pages y host
 
 Revisa secretos expuestos (prefijos de env, claves reales, bundles), RLS,
 políticas y vistas abiertas en Supabase, reglas de Firebase, rate limit en
-endpoints de auth/LLM y hallazgos críticos confirmados. Salida 1 significa: no
-hagas el deploy. Para subir de todos modos hace falta un waiver explícito, con
+endpoints de auth/LLM y hallazgos críticos confirmados (esos bloquean donde exista el archivo de hallazgos de la auditoría: localmente y, en CI, solo en repositorios privados que decidan versionarlo). Salida 1 significa: no
+hagas el deploy. Para subir de todos modos hace falta un waiver explícito (`.jason/waivers.json`, versionado y protegido por CODEOWNERS), con
 motivo, responsable y fecha de vencimiento; los secretos reales filtrados no se
 pueden eximir. Detalles y configuraciones para GitHub Actions, Firebase y Expo:
 `skills/jason/07-DEPLOY-GATE.md`.

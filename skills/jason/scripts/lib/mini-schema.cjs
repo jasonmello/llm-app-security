@@ -57,11 +57,11 @@ function validate(schema, value, path = '$', errors = []) {
   }
   if (typeOf(value) === 'object') {
     for (const key of schema.required || []) {
-      if (!(key in value)) errors.push(`${path}: missing "${key}"`);
+      if (!Object.prototype.hasOwnProperty.call(value, key)) errors.push(`${path}: missing "${key}"`);
     }
     const props = schema.properties || {};
     for (const [key, v] of Object.entries(value)) {
-      if (props[key]) validate(props[key], v, `${path}.${key}`, errors);
+      if (Object.prototype.hasOwnProperty.call(props, key)) validate(props[key], v, `${path}.${key}`, errors);
       else if (schema.additionalProperties === false) errors.push(`${path}: unexpected "${key}"`);
     }
   }
