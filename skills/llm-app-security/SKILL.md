@@ -178,10 +178,20 @@ skip the check, note it in REPORT.md and warn the user not to copy
 - `REPORT.md`: in the user's language, ordered by severity, each with a fix.
 - `honeytokens.md` (only if module 03 ran, private repos only): bait inventory.
 
-Validate (path is relative to this skill's folder, wherever it is installed):
+## Scripts
+
+All script commands live here because Claude Code fills in the skill folder in
+this file only (also when installed as a plugin). Other agents: replace
+`${CLAUDE_SKILL_DIR}` with the folder that contains this SKILL.md; the shell
+does not set it.
 
 ```bash
-node <skill-dir>/scripts/validate-findings.cjs security/findings.json --ledger security/coverage-ledger.json
+# Validate the full-audit output (01)
+node "${CLAUDE_SKILL_DIR}/scripts/validate-findings.cjs" security/findings.json --ledger security/coverage-ledger.json
+# Check honeytoken placement (03)
+node "${CLAUDE_SKILL_DIR}/scripts/check-honeytokens.cjs" <inventory.md> --root <repo>
+# Supabase RLS heuristic (06); copy to scripts/ci/ in the target repo for CI
+bash "${CLAUDE_SKILL_DIR}/scripts/rls-guard.sh" <repo>
 ```
 
 ## Working with the user

@@ -127,6 +127,25 @@ test('01 class table matches the findings category enum', () => {
   assert.deepStrictEqual(classes, enumCats);
 });
 
+test('plugin and marketplace manifests follow the documented schema', () => {
+  const root = path.join(__dirname, '..');
+  const plugin = JSON.parse(fs.readFileSync(path.join(root, '.claude-plugin/plugin.json'), 'utf8'));
+  const market = JSON.parse(fs.readFileSync(path.join(root, '.claude-plugin/marketplace.json'), 'utf8'));
+  const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+  const kebab = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+  assert.match(plugin.name, kebab);
+  assert.ok(!/^(claude|anthropic|anthropics)(-|$)|^cc-plugin-|official/i.test(plugin.name), 'reserved name');
+  assert.strictEqual(plugin.version, pkg.version, 'plugin version matches package.json');
+  assert.ok(market.owner && market.owner.name, 'marketplace owner.name');
+  assert.match(market.name, /^[A-Za-z0-9][A-Za-z0-9._-]*$/);
+  assert.ok(!market.name.includes('..'));
+  const entry = market.plugins.find((p) => p.name === plugin.name);
+  assert.ok(entry, 'marketplace lists the plugin under the same name');
+  assert.ok(entry.source === './' || entry.source === '.', 'plugin lives at the repo root');
+  assert.ok(fs.existsSync(path.join(root, 'skills/llm-app-security/SKILL.md')), 'skill auto-discovered from skills/');
+  assert.ok(!fs.existsSync(path.join(root, '.claude-plugin/skills')), 'skills must not live inside .claude-plugin/');
+});
+
 test('rls-guard flags the example app', () => {
   const { spawnSync } = require('node:child_process');
   const script = path.join(__dirname, '..', 'skills/llm-app-security/scripts/rls-guard.sh');

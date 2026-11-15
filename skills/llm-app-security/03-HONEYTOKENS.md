@@ -122,7 +122,7 @@ Template: [templates/incident-runbook.md](templates/incident-runbook.md). In sho
    create accounts or submit the form for them).
 4. Create the bait files with the user-provided token values and believable
    surroundings; update the inventory; add the credential rule to AGENTS.md.
-5. Run `node <skill-dir>/scripts/check-honeytokens.cjs <inventory.md> --root <repo>`
+5. Run the honeytoken check (command in SKILL.md "Scripts")
    to check that each bait exists, is not under a served folder and is
    excluded from deploy contexts and build output. If the inventory lives in
    the repo (e.g. `security/honeytokens.md`), it is a map of the bait: add

@@ -1,0 +1,12 @@
+{
+  "name": "llm-app-security",
+  "description": "Marketplace for the llm-app-security Claude Code plugin",
+  "owner": { "name": "jasonmello", "url": "https://github.com/jasonmello" },
+  "plugins": [
+    {
+      "name": "llm-app-security",
+      "source": "./",
+      "description": "Defensive security for apps built with LLMs and coding agents"
+    }
+  ]
+}

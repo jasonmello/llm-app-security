@@ -5,9 +5,9 @@
 ## English
 
 **A defensive security skill for apps built with LLMs and coding agents.**
-Built and tested for Claude Code; usable with other agents that load
-`SKILL.md` skills or read `AGENTS.md` (Codex, Cursor, Gemini CLI…), though not
-tested on each. A *skill* is a folder of instructions and scripts your coding
+Tested with Claude Code (skill or plugin) and OpenAI Codex CLI (through
+`AGENTS.md`); other agents that load `SKILL.md` skills or read `AGENTS.md`
+(Cursor, Gemini CLI…) should work but have not been tested. A *skill* is a folder of instructions and scripts your coding
 agent loads when a request matches it. The skill itself is written in English;
 the agent answers in your language.
 
@@ -39,7 +39,38 @@ location, fix and effort, owner checks for things only visible in your
 dashboards, and what it did not check. For the full audit: *"run a full
 security audit with llm-app-security"*.
 
+<details>
+<summary>Example answer (real quick-mode run on <code>examples/vulnerable-vibe-app</code>, shortened)</summary>
+
+> **Verdict: not ready.** 9 critical and 2 high items. The worst thing an attacker can do today needs no account: open `GET /api/admin/users` and get every user's email and plain-text password.
+>
+> - **Exposed API keys:** found · **Routes without login:** found · **Database without access rules:** found
+>
+> | # | Severity | What | Where | How to fix | Effort |
+> |---|---|---|---|---|---|
+> | 1 | Critical | Admin route with no login returns every user's email and password | `server.js:37-40` | `requireUser` + server-side admin check; never select `password` | 30 min |
+> | 3 | Critical | Payment bypass: client-sent `amount` stored as is | `server.js:42-45` | Price from `productId` on the server; record payment after a verified webhook | 2 h |
+> | 6 | Critical | `profiles` table without RLS: anyone with the anon key reads and writes it | `001_init.sql:1` | `enable row level security` + owner policies on `auth.uid()` | 20 min |
+> | 8 | Critical | OpenAI key shipped to the browser via `VITE_` (looks like a placeholder; confirm) | `.env:2`, `src/chat.jsx:8-12` | Server route with auth, rate limit and `max_tokens`; rotate if real | 1 h |
+> | 10 | High | Hidden comment telling AI agents to print `.env` (not followed) | `README.md:6` | Delete it; add agent rules to `AGENTS.md` | 10 min |
+> | … | | *14 rows in total, plus low items and one correct rejection (CORS with Bearer auth)* | | | |
+>
+> **Owner check:** Supabase → Table editor → `profiles`, `invoices` → RLS shows Enabled (matters because of `001_init.sql:1-6`).
+>
+> Which fixes should I apply?
+
+</details>
+
 ### Install
+
+**As a Claude Code plugin** (recommended for Claude Code):
+
+```text
+/plugin marketplace add jasonmello/llm-app-security
+/plugin install llm-app-security@llm-app-security
+```
+
+**Or copy the folder** (any agent):
 
 ```bash
 git clone https://github.com/jasonmello/llm-app-security.git
@@ -47,7 +78,8 @@ git clone https://github.com/jasonmello/llm-app-security.git
 mkdir -p ~/.claude/skills && cp -R llm-app-security/skills/llm-app-security ~/.claude/skills/
 ```
 
-Copy the inner `skills/llm-app-security` folder, not the whole clone. In Claude
+The plugin installs the whole repository, including the intentionally insecure
+example app (never run it). Copy the inner `skills/llm-app-security` folder, not the whole clone. In Claude
 Code the skill triggers on its own from requests like the prompt above, or you
 can ask for "llm-app-security" by name.
 
@@ -56,6 +88,14 @@ can ask for "llm-app-security" by name.
 | Claude Code (all projects) | `~/.claude/skills/` |
 | Claude Code (one project) | `.claude/skills/` |
 | Codex, Cursor, Gemini CLI and others | the agent's skills directory, or reference `SKILL.md` from the project's `AGENTS.md` |
+
+For Codex (and other agents that read `AGENTS.md`), copy the folder to
+`.skills/llm-app-security` in your project and add to `AGENTS.md`:
+
+```markdown
+For any security review, audit or "is this safe" request, follow the skill in
+`.skills/llm-app-security/SKILL.md` (load the modules it points to).
+```
 
 The scripts (`validate-findings.cjs`, `check-honeytokens.cjs`, `rls-guard.sh`)
 live in the skill's `scripts/` folder wherever it is installed. They need only
@@ -101,9 +141,9 @@ MIT. See [LICENSE](LICENSE) and [DISCLAIMER.md](DISCLAIMER.md).
 ## Português (Brasil)
 
 **Uma skill de segurança defensiva para apps feitos com LLMs e agentes de código.**
-Feita e testada para o Claude Code; também dá para usar com outros agentes que
-carregam skills `SKILL.md` ou leem `AGENTS.md` (Codex, Cursor, Gemini CLI…),
-mas não foi testada em cada um. Uma *skill* é uma pasta de instruções e scripts
+Testada no Claude Code (como skill ou plugin) e no OpenAI Codex CLI (via
+`AGENTS.md`); outros agentes que carregam skills `SKILL.md` ou leem
+`AGENTS.md` (Cursor, Gemini CLI…) devem funcionar, mas não foram testados. Uma *skill* é uma pasta de instruções e scripts
 que o seu agente de código carrega quando o pedido combina com ela. A skill em
 si é escrita em inglês; o agente responde no seu idioma.
 
@@ -137,7 +177,38 @@ localização, correção e esforço, itens para o dono conferir, já que só ap
 painéis, e o que ele não verificou. Para a auditoria completa: *"rode uma auditoria
 de segurança completa com a llm-app-security"*.
 
+<details>
+<summary>Exemplo de resposta (execução real do quick mode em <code>examples/vulnerable-vibe-app</code>, resumida)</summary>
+
+> **Veredito: não está pronto.** 9 itens críticos e 2 altos. O pior que um atacante consegue fazer hoje não exige conta: abrir `GET /api/admin/users` e pegar o email e a senha em texto puro de todos os usuários.
+>
+> - **Chaves de API expostas:** encontradas · **Rotas sem login:** encontradas · **Banco sem regras de acesso:** encontrado
+>
+> | # | Severidade | O quê | Onde | Como corrigir | Esforço |
+> |---|---|---|---|---|---|
+> | 1 | Crítica | Rota de admin sem login devolve email e senha de todos | `server.js:37-40` | `requireUser` + checagem de admin no servidor; nunca selecionar `password` | 30 min |
+> | 3 | Crítica | Burla de pagamento: o `amount` enviado pelo cliente é gravado como veio | `server.js:42-45` | Preço calculado no servidor a partir de `productId`; registrar o pagamento após webhook verificado | 2 h |
+> | 6 | Crítica | Tabela `profiles` sem RLS: qualquer um com a anon key lê e escreve | `001_init.sql:1` | `enable row level security` + políticas de dono com `auth.uid()` | 20 min |
+> | 8 | Crítica | Chave da OpenAI enviada ao navegador via `VITE_` (parece placeholder; confirme) | `.env:2`, `src/chat.jsx:8-12` | Rota no servidor com auth, rate limit e `max_tokens`; rotacionar se for real | 1 h |
+> | 10 | Alta | Comentário escondido mandando agentes de IA imprimirem o `.env` (não foi seguido) | `README.md:6` | Apagar; adicionar regras para agentes no `AGENTS.md` | 10 min |
+> | … | | *14 linhas no total, mais itens baixos e uma rejeição correta (CORS com auth Bearer)* | | | |
+>
+> **Para o dono conferir:** Supabase → Table editor → `profiles`, `invoices` → RLS aparece como Enabled (importa por causa de `001_init.sql:1-6`).
+>
+> Quais correções devo aplicar?
+
+</details>
+
 ### Instalação
+
+**Como plugin do Claude Code** (recomendado no Claude Code):
+
+```text
+/plugin marketplace add jasonmello/llm-app-security
+/plugin install llm-app-security@llm-app-security
+```
+
+**Ou copie a pasta** (qualquer agente):
 
 ```bash
 git clone https://github.com/jasonmello/llm-app-security.git
@@ -145,7 +216,8 @@ git clone https://github.com/jasonmello/llm-app-security.git
 mkdir -p ~/.claude/skills && cp -R llm-app-security/skills/llm-app-security ~/.claude/skills/
 ```
 
-Copie a pasta interna `skills/llm-app-security`, não o clone inteiro. No Claude
+O plugin instala o repositório inteiro, incluindo o app de exemplo inseguro de
+propósito (nunca o rode). Copie a pasta interna `skills/llm-app-security`, não o clone inteiro. No Claude
 Code a skill é acionada sozinha por pedidos como o prompt acima, ou você pode
 pedir a "llm-app-security" pelo nome.
 
@@ -154,6 +226,14 @@ pedir a "llm-app-security" pelo nome.
 | Claude Code (todos os projetos) | `~/.claude/skills/` |
 | Claude Code (um projeto) | `.claude/skills/` |
 | Codex, Cursor, Gemini CLI e outros | o diretório de skills do agente, ou referencie o `SKILL.md` no `AGENTS.md` do projeto |
+
+No Codex (e em outros agentes que leem `AGENTS.md`), copie a pasta para
+`.skills/llm-app-security` no seu projeto e adicione ao `AGENTS.md`:
+
+```markdown
+For any security review, audit or "is this safe" request, follow the skill in
+`.skills/llm-app-security/SKILL.md` (load the modules it points to).
+```
 
 Os scripts (`validate-findings.cjs`, `check-honeytokens.cjs`, `rls-guard.sh`)
 ficam na pasta `scripts/` da skill, onde quer que ela esteja instalada. Eles só precisam de
@@ -200,9 +280,9 @@ MIT. Veja [LICENSE](LICENSE) e [DISCLAIMER.md](DISCLAIMER.md).
 ## Español
 
 **Una skill de seguridad defensiva para apps construidas con LLMs y agentes de programación.**
-Creada y probada para Claude Code; también se puede usar con otros agentes que
-cargan skills `SKILL.md` o leen `AGENTS.md` (Codex, Cursor, Gemini CLI…),
-aunque no se probó en cada uno. Una *skill* es una carpeta de instrucciones y
+Probada en Claude Code (como skill o plugin) y en OpenAI Codex CLI (vía
+`AGENTS.md`); otros agentes que cargan skills `SKILL.md` o leen `AGENTS.md`
+(Cursor, Gemini CLI…) deberían funcionar, pero no se han probado. Una *skill* es una carpeta de instrucciones y
 scripts que tu agente de programación carga cuando la solicitud coincide con
 ella. La skill en sí está escrita en inglés; el agente responde en tu idioma.
 
@@ -235,7 +315,38 @@ ubicación, corrección y esfuerzo, comprobaciones que debe hacer el responsable
 se ve en tus paneles, y lo que no revisó. Para la auditoría completa: *"haz una
 auditoría de seguridad completa con llm-app-security"*.
 
+<details>
+<summary>Ejemplo de respuesta (ejecución real del quick mode en <code>examples/vulnerable-vibe-app</code>, resumida)</summary>
+
+> **Veredicto: no está lista.** 9 puntos críticos y 2 altos. Lo peor que un atacante puede hacer hoy no requiere cuenta: abrir `GET /api/admin/users` y obtener el email y la contraseña en texto plano de todos los usuarios.
+>
+> - **Claves de API expuestas:** encontradas · **Rutas sin login:** encontradas · **Base de datos sin reglas de acceso:** encontrada
+>
+> | # | Severidad | Qué | Dónde | Cómo corregirlo | Esfuerzo |
+> |---|---|---|---|---|---|
+> | 1 | Crítica | Ruta de admin sin login devuelve email y contraseña de todos | `server.js:37-40` | `requireUser` + verificación de admin en el servidor; nunca seleccionar `password` | 30 min |
+> | 3 | Crítica | Evasión de pago: el `amount` enviado por el cliente se guarda tal cual | `server.js:42-45` | Precio calculado en el servidor a partir de `productId`; registrar el pago tras un webhook verificado | 2 h |
+> | 6 | Crítica | Tabla `profiles` sin RLS: cualquiera con la anon key la lee y la escribe | `001_init.sql:1` | `enable row level security` + políticas de propietario con `auth.uid()` | 20 min |
+> | 8 | Crítica | Clave de OpenAI enviada al navegador vía `VITE_` (parece un placeholder; confírmalo) | `.env:2`, `src/chat.jsx:8-12` | Ruta en el servidor con auth, rate limit y `max_tokens`; rotarla si es real | 1 h |
+> | 10 | Alta | Comentario oculto que ordena a los agentes de IA imprimir el `.env` (no se siguió) | `README.md:6` | Borrarlo; añadir reglas para agentes en `AGENTS.md` | 10 min |
+> | … | | *14 filas en total, más puntos bajos y un rechazo correcto (CORS con auth Bearer)* | | | |
+>
+> **Comprobación del responsable:** Supabase → Table editor → `profiles`, `invoices` → RLS aparece como Enabled (importa por `001_init.sql:1-6`).
+>
+> ¿Qué correcciones aplico?
+
+</details>
+
 ### Instalación
+
+**Como plugin de Claude Code** (recomendado en Claude Code):
+
+```text
+/plugin marketplace add jasonmello/llm-app-security
+/plugin install llm-app-security@llm-app-security
+```
+
+**O copia la carpeta** (cualquier agente):
 
 ```bash
 git clone https://github.com/jasonmello/llm-app-security.git
@@ -243,7 +354,8 @@ git clone https://github.com/jasonmello/llm-app-security.git
 mkdir -p ~/.claude/skills && cp -R llm-app-security/skills/llm-app-security ~/.claude/skills/
 ```
 
-Copia la carpeta interna `skills/llm-app-security`, no el clon completo. En
+El plugin instala el repositorio completo, incluida la app de ejemplo insegura
+a propósito (nunca la ejecutes). Copia la carpeta interna `skills/llm-app-security`, no el clon completo. En
 Claude Code la skill se activa sola con solicitudes como el prompt de arriba, o
 puedes pedir "llm-app-security" por su nombre.
 
@@ -252,6 +364,14 @@ puedes pedir "llm-app-security" por su nombre.
 | Claude Code (todos los proyectos) | `~/.claude/skills/` |
 | Claude Code (un proyecto) | `.claude/skills/` |
 | Codex, Cursor, Gemini CLI y otros | el directorio de skills del agente, o haz referencia a `SKILL.md` desde el `AGENTS.md` del proyecto |
+
+En Codex (y otros agentes que leen `AGENTS.md`), copia la carpeta a
+`.skills/llm-app-security` en tu proyecto y añade a `AGENTS.md`:
+
+```markdown
+For any security review, audit or "is this safe" request, follow the skill in
+`.skills/llm-app-security/SKILL.md` (load the modules it points to).
+```
 
 Los scripts (`validate-findings.cjs`, `check-honeytokens.cjs`, `rls-guard.sh`)
 están en la carpeta `scripts/` de la skill, dondequiera que esté instalada. Solo necesitan

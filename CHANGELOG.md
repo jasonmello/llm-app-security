@@ -4,6 +4,21 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2026-11-15
+
+### Added
+- Claude Code plugin: `.claude-plugin/plugin.json` and a marketplace manifest,
+  so users can install with `/plugin marketplace add jasonmello/llm-app-security`
+  and `/plugin install llm-app-security@llm-app-security`.
+- README: real quick-mode example answer (EN, pt-BR, ES) and plugin install.
+- Test that checks the plugin and marketplace manifests.
+
+### Changed
+- Script paths in the skill use `${CLAUDE_SKILL_DIR}` so they resolve when
+  installed as a plugin; other agents use the skill's own folder.
+- Compatibility: tested with OpenAI Codex CLI through `AGENTS.md` (in addition
+  to Claude Code).
+
 ## [0.1.0] - 2026-11-15
 
 First public release.
@@ -27,4 +42,5 @@ First public release.
   with an answer key.
 - README in English, Portuguese (Brazil) and Spanish.
 
+[0.2.0]: https://github.com/jasonmello/llm-app-security/releases/tag/v0.2.0
 [0.1.0]: https://github.com/jasonmello/llm-app-security/releases/tag/v0.1.0

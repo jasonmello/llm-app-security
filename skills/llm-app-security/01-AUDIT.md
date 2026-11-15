@@ -171,7 +171,7 @@ never against production.
 
 Write `security/findings.json` following
 [templates/findings.schema.json](templates/findings.schema.json) and run the
-validator (command in SKILL.md "Outputs") on both `findings.json` and
+validator (command in SKILL.md "Scripts") on both `findings.json` and
 `coverage-ledger.json`; it also cross-checks fingerprints between them. Fix
 errors before reporting. One finding per root cause: list every location and
 fix it needs, and do not combine distinct root causes. Placeholder values
