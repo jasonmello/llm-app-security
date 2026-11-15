@@ -1,9 +1,11 @@
 ---
-name: llm-app-security
-description: Security for software built with LLMs and coding agents. Pre-launch "think like an attacker" check, full audit of AI-generated code (secrets, auth, IDOR, Supabase/Firebase rules, injection, LLM/agent tools, supply chain), PR quality gates, passive honeytokens/canaries that alert when an intruder or hijacked agent uses fake credentials, and repo defense against prompt injection aimed at coding agents. Use for security audits or reviews, "is my app safe", "review as if you wanted to break in", exposed API keys, routes without login, database rules, honeytokens/canary tokens/password.txt bait, prompt-injection defense, CI security gates, or securing a release.
+name: jason
+description: J.A.S.O.N. (Just Audit, Secure, Observe, Notify) — LLM App Security. Defensive security for software built with LLMs and coding agents. Pre-launch "think like an attacker" check, full audit of AI-generated code (secrets, auth, IDOR, Supabase/Firebase rules, injection, LLM/agent tools, supply chain), PR quality gates, passive honeytokens/canaries that alert when an intruder or hijacked agent uses fake credentials, and repo defense against prompt injection aimed at coding agents. Use for security audits or reviews, "is my app safe", "review as if you wanted to break in", exposed API keys, routes without login, database rules, honeytokens/canary tokens/password.txt bait, prompt-injection defense, CI security gates, or securing a release.
 ---
 
-# LLM App Security
+# J.A.S.O.N. — LLM App Security
+
+**J**ust **A**udit, **S**ecure, **O**bserve, **N**otify.
 
 A defensive skill for apps that were written fast, often by an AI. Load only
 the modules the request needs.

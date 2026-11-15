@@ -1,8 +1,8 @@
 {
   "name": "llm-app-security",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "private": true,
-  "description": "Defensive security skill for apps built with LLMs and coding agents",
+  "description": "J.A.S.O.N. — LLM App Security: defensive security skill for apps built with LLMs and coding agents",
   "keywords": [
     "claude-code",
     "agent-skills",

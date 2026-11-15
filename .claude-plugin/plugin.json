@@ -1,10 +1,22 @@
 {
   "name": "llm-app-security",
-  "version": "0.2.1",
-  "description": "Defensive security for apps built with LLMs and coding agents: pre-launch attacker check, audits, honeytokens, prompt-injection defense and PR gates.",
-  "author": { "name": "jasonmello", "url": "https://github.com/jasonmello" },
+  "displayName": "J.A.S.O.N. — LLM App Security",
+  "version": "0.3.0",
+  "description": "J.A.S.O.N. (Just Audit, Secure, Observe, Notify): defensive security for apps built with LLMs and coding agents. Pre-launch attacker check, audits, honeytokens, prompt-injection defense and PR gates.",
+  "author": {
+    "name": "jasonmello",
+    "url": "https://github.com/jasonmello"
+  },
   "homepage": "https://github.com/jasonmello/llm-app-security",
   "repository": "https://github.com/jasonmello/llm-app-security",
   "license": "MIT",
-  "keywords": ["security", "appsec", "llm-security", "prompt-injection", "honeytokens", "supabase", "firebase"]
+  "keywords": [
+    "security",
+    "appsec",
+    "llm-security",
+    "prompt-injection",
+    "honeytokens",
+    "supabase",
+    "firebase"
+  ]
 }

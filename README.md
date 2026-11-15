@@ -1,4 +1,8 @@
-# llm-app-security
+<img src=".claude-plugin/icon.png" alt="J.A.S.O.N. shield icon" width="96" align="right">
+
+# J.A.S.O.N. — LLM App Security
+
+***J**ust **A**udit, **S**ecure, **O**bserve, **N**otify.* Ship on Friday the 13th. Fearlessly.
 
 [English](#english) · [Português (Brasil)](#português-brasil) · [Español](#español)
 
@@ -15,6 +19,17 @@ front-end, routes without login, databases without access rules. This skill
 teaches your coding agent to find and fix them, to detect intruders with
 passive honeytokens, and to defend the repository itself against prompt
 injection.
+
+**Why "J.A.S.O.N."?** It is named after its author, Jason, and every letter is
+a part of the skill:
+
+| Letter | Means | Modules |
+|---|---|---|
+| **J**ust | it should be that simple | — |
+| **A**udit | find the holes | quick mode, `01`, `02` |
+| **S**ecure | keep them from coming back | `04`, `05`, `06` |
+| **O**bserve | watch with bait | `03` (honeytokens) |
+| **N**otify | tell the right people | alerts and the report |
 
 ### What it does
 
@@ -36,7 +51,7 @@ With the skill installed, the agent runs *quick mode* and returns a verdict
 (ready / ready after fixing N items / not ready), a table with severity,
 location, fix and effort, owner checks for things only visible in your
 dashboards, and what it did not check. For the full audit: *"run a full
-security audit with llm-app-security"*.
+security audit with J.A.S.O.N."*.
 
 <details>
 <summary>Example answer (real quick-mode run on <code>examples/vulnerable-vibe-app</code>, shortened)</summary>
@@ -74,26 +89,31 @@ security audit with llm-app-security"*.
 ```bash
 git clone https://github.com/jasonmello/llm-app-security.git
 # Claude Code, all projects:
-mkdir -p ~/.claude/skills && cp -R llm-app-security/skills/llm-app-security ~/.claude/skills/
+mkdir -p ~/.claude/skills && cp -R llm-app-security/skills/jason ~/.claude/skills/
 ```
 
 The plugin installs the whole repository, including the intentionally insecure
-example app (never run it). Copy the inner `skills/llm-app-security` folder, not the whole clone. In Claude
-Code the skill triggers on its own from requests like the prompt above, or you
-can ask for "llm-app-security" by name.
+example app (never run it). Copy the inner `skills/jason` folder, not the whole clone. In Claude
+Code the skill triggers on its own from requests like the prompt above; you
+can also type `/jason` (as a plugin: `/llm-app-security:jason`) or ask for
+"J.A.S.O.N." by name.
 
-| Agent | Where to copy `skills/llm-app-security` |
+**Upgrading from 0.2.x (manual install):** delete the old
+`llm-app-security` skill folder first (`~/.claude/skills/`, `.claude/skills/`
+or `.skills/`), otherwise two overlapping skills stay installed.
+
+| Agent | Where to copy `skills/jason` |
 |---|---|
 | Claude Code (all projects) | `~/.claude/skills/` |
 | Claude Code (one project) | `.claude/skills/` |
 | OpenAI Codex CLI | `.skills/` in your project, referenced from `AGENTS.md` (snippet below) |
 
 For Codex, copy the folder to
-`.skills/llm-app-security` in your project and add to `AGENTS.md`:
+`.skills/jason` in your project and add to `AGENTS.md`:
 
 ```markdown
 For any security review, audit or "is this safe" request, follow the skill in
-`.skills/llm-app-security/SKILL.md` (load the modules it points to).
+`.skills/jason/SKILL.md` (load the modules it points to).
 ```
 
 The scripts (`validate-findings.cjs`, `check-honeytokens.cjs`, `rls-guard.sh`)
@@ -153,6 +173,17 @@ ensina o seu agente de código a encontrar e corrigir esses problemas, a detecta
 honeytokens passivos e a defender o próprio repositório contra prompt
 injection.
 
+**Por que "J.A.S.O.N."?** O nome vem do autor, Jason, e cada letra é uma parte
+da skill:
+
+| Letra | Significa | Módulos |
+|---|---|---|
+| **J**ust | "simples assim" | — |
+| **A**udit | encontrar as falhas | quick mode, `01`, `02` |
+| **S**ecure | impedir que elas voltem | `04`, `05`, `06` |
+| **O**bserve | vigiar com iscas | `03` (honeytokens) |
+| **N**otify | avisar quem precisa | alertas e o relatório |
+
 ### O que ela faz
 
 | Módulo | Para que serve |
@@ -173,7 +204,7 @@ Com a skill instalada, o agente roda o *quick mode* e devolve um veredito
 (pronto / pronto depois de corrigir N itens / não está pronto), uma tabela com severidade,
 localização, correção e esforço, itens para o dono conferir, já que só aparecem nos seus
 painéis, e o que ele não verificou. Para a auditoria completa: *"rode uma auditoria
-de segurança completa com a llm-app-security"*.
+de segurança completa com o J.A.S.O.N."*.
 
 <details>
 <summary>Exemplo de resposta (execução real do quick mode em <code>examples/vulnerable-vibe-app</code>, resumida)</summary>
@@ -211,26 +242,31 @@ de segurança completa com a llm-app-security"*.
 ```bash
 git clone https://github.com/jasonmello/llm-app-security.git
 # Claude Code, todos os projetos:
-mkdir -p ~/.claude/skills && cp -R llm-app-security/skills/llm-app-security ~/.claude/skills/
+mkdir -p ~/.claude/skills && cp -R llm-app-security/skills/jason ~/.claude/skills/
 ```
 
 O plugin instala o repositório inteiro, incluindo o app de exemplo inseguro de
-propósito (nunca o rode). Copie a pasta interna `skills/llm-app-security`, não o clone inteiro. No Claude
-Code a skill é acionada sozinha por pedidos como o prompt acima, ou você pode
-pedir a "llm-app-security" pelo nome.
+propósito (nunca o rode). Copie a pasta interna `skills/jason`, não o clone inteiro. No Claude
+Code a skill é acionada sozinha por pedidos como o prompt acima; você também
+pode digitar `/jason` (como plugin: `/llm-app-security:jason`) ou chamar o
+"J.A.S.O.N." pelo nome.
 
-| Agente | Para onde copiar `skills/llm-app-security` |
+**Atualizando da 0.2.x (instalação manual):** apague antes a pasta antiga
+`llm-app-security` (em `~/.claude/skills/`, `.claude/skills/` ou `.skills/`);
+senão ficam duas skills parecidas instaladas.
+
+| Agente | Para onde copiar `skills/jason` |
 |---|---|
 | Claude Code (todos os projetos) | `~/.claude/skills/` |
 | Claude Code (um projeto) | `.claude/skills/` |
 | OpenAI Codex CLI | `.skills/` no seu projeto, referenciada no `AGENTS.md` (trecho abaixo) |
 
 No Codex, copie a pasta para
-`.skills/llm-app-security` no seu projeto e adicione ao `AGENTS.md`:
+`.skills/jason` no seu projeto e adicione ao `AGENTS.md`:
 
 ```markdown
 For any security review, audit or "is this safe" request, follow the skill in
-`.skills/llm-app-security/SKILL.md` (load the modules it points to).
+`.skills/jason/SKILL.md` (load the modules it points to).
 ```
 
 Os scripts (`validate-findings.cjs`, `check-honeytokens.cjs`, `rls-guard.sh`)
@@ -290,6 +326,17 @@ de API en el front-end, rutas sin login, bases de datos sin reglas de acceso. Es
 le enseña a tu agente de programación a encontrarlos y corregirlos, a detectar intrusos con
 honeytokens pasivos y a defender el propio repositorio contra prompt injection.
 
+**¿Por qué "J.A.S.O.N."?** El nombre viene de su autor, Jason, y cada letra es
+una parte de la skill:
+
+| Letra | Significa | Módulos |
+|---|---|---|
+| **J**ust | "así de simple" | — |
+| **A**udit | encontrar los huecos | quick mode, `01`, `02` |
+| **S**ecure | evitar que vuelvan | `04`, `05`, `06` |
+| **O**bserve | vigilar con señuelos | `03` (honeytokens) |
+| **N**otify | avisar a quien corresponde | alertas y el informe |
+
 ### Qué hace
 
 | Módulo | Propósito |
@@ -310,7 +357,7 @@ Con la skill instalada, el agente ejecuta el *quick mode* y devuelve un veredict
 (lista / lista después de corregir N puntos / no lista), una tabla con severidad,
 ubicación, corrección y esfuerzo, comprobaciones que debe hacer el responsable sobre lo que solo
 se ve en tus paneles, y lo que no revisó. Para la auditoría completa: *"haz una
-auditoría de seguridad completa con llm-app-security"*.
+auditoría de seguridad completa con J.A.S.O.N."*.
 
 <details>
 <summary>Ejemplo de respuesta (ejecución real del quick mode en <code>examples/vulnerable-vibe-app</code>, resumida)</summary>
@@ -348,26 +395,31 @@ auditoría de seguridad completa con llm-app-security"*.
 ```bash
 git clone https://github.com/jasonmello/llm-app-security.git
 # Claude Code, todos los proyectos:
-mkdir -p ~/.claude/skills && cp -R llm-app-security/skills/llm-app-security ~/.claude/skills/
+mkdir -p ~/.claude/skills && cp -R llm-app-security/skills/jason ~/.claude/skills/
 ```
 
 El plugin instala el repositorio completo, incluida la app de ejemplo insegura
-a propósito (nunca la ejecutes). Copia la carpeta interna `skills/llm-app-security`, no el clon completo. En
-Claude Code la skill se activa sola con solicitudes como el prompt de arriba, o
-puedes pedir "llm-app-security" por su nombre.
+a propósito (nunca la ejecutes). Copia la carpeta interna `skills/jason`, no el clon completo. En
+Claude Code la skill se activa sola con solicitudes como el prompt de arriba;
+también puedes escribir `/jason` (como plugin: `/llm-app-security:jason`) o
+pedir "J.A.S.O.N." por su nombre.
 
-| Agente | Dónde copiar `skills/llm-app-security` |
+**Actualizar desde 0.2.x (instalación manual):** borra antes la carpeta
+antigua `llm-app-security` (en `~/.claude/skills/`, `.claude/skills/` o
+`.skills/`); si no, quedan instaladas dos skills que se solapan.
+
+| Agente | Dónde copiar `skills/jason` |
 |---|---|
 | Claude Code (todos los proyectos) | `~/.claude/skills/` |
 | Claude Code (un proyecto) | `.claude/skills/` |
 | OpenAI Codex CLI | `.skills/` en tu proyecto, referenciada desde `AGENTS.md` (fragmento abajo) |
 
 En Codex, copia la carpeta a
-`.skills/llm-app-security` en tu proyecto y añade a `AGENTS.md`:
+`.skills/jason` en tu proyecto y añade a `AGENTS.md`:
 
 ```markdown
 For any security review, audit or "is this safe" request, follow the skill in
-`.skills/llm-app-security/SKILL.md` (load the modules it points to).
+`.skills/jason/SKILL.md` (load the modules it points to).
 ```
 
 Los scripts (`validate-findings.cjs`, `check-honeytokens.cjs`, `rls-guard.sh`)

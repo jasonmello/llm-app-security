@@ -4,6 +4,20 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.3.0] - 2026-11-15
+
+### Changed
+- New name: **J.A.S.O.N. — LLM App Security** (Just Audit, Secure, Observe,
+  Notify), named after its author. The skill is now `jason`: the folder moved
+  from `skills/llm-app-security` to `skills/jason`, so manual installs must copy
+  the new folder (and Codex `AGENTS.md` snippets must point to
+  `.skills/jason/SKILL.md`). Delete the old `llm-app-security` skill folder
+  before copying the new one, or two overlapping skills stay installed.
+  Invoke with `/jason`, or `/llm-app-security:jason` as a plugin.
+- The repository, the plugin id and its install commands are unchanged.
+- README (EN/pt-BR/ES): new title, acronym table, origin of the name; icon
+  with a discreet 13.
+
 ## [0.2.1] - 2026-11-15
 
 ### Changed
@@ -52,6 +66,7 @@ First public release.
   with an answer key.
 - README in English, Portuguese (Brazil) and Spanish.
 
+[0.3.0]: https://github.com/jasonmello/llm-app-security/releases/tag/v0.3.0
 [0.2.1]: https://github.com/jasonmello/llm-app-security/releases/tag/v0.2.1
 [0.2.0]: https://github.com/jasonmello/llm-app-security/releases/tag/v0.2.0
 [0.1.0]: https://github.com/jasonmello/llm-app-security/releases/tag/v0.1.0

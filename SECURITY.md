@@ -11,7 +11,7 @@ impact, please report it privately through
 
 ## Scope
 
-The skill text (`skills/llm-app-security/*.md`), its scripts and templates.
+The skill text (`skills/jason/*.md`), its scripts and templates.
 The example app in `examples/` is insecure on purpose; its planted flaws are
 not vulnerabilities.
 

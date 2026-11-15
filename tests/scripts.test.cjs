@@ -4,8 +4,8 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { checkFindings, checkLedger } = require('../skills/llm-app-security/scripts/validate-findings.cjs');
-const { parseInventory, check } = require('../skills/llm-app-security/scripts/check-honeytokens.cjs');
+const { checkFindings, checkLedger } = require('../skills/jason/scripts/validate-findings.cjs');
+const { parseInventory, check } = require('../skills/jason/scripts/check-honeytokens.cjs');
 
 const valid = () => ({
   schema_version: 2,
@@ -113,14 +113,14 @@ test('ledger cross-checks', () => {
 });
 
 test('mini-schema refuses unsupported keywords', () => {
-  const { validate } = require('../skills/llm-app-security/scripts/lib/mini-schema.cjs');
+  const { validate } = require('../skills/jason/scripts/lib/mini-schema.cjs');
   assert.throws(() => validate({ oneOf: [] }, {}), /unsupported keyword "oneOf"/);
 });
 
 test('01 class table matches the findings category enum', () => {
-  const schema = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'skills/llm-app-security/templates/findings.schema.json'), 'utf8'));
+  const schema = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'skills/jason/templates/findings.schema.json'), 'utf8'));
   const enumCats = schema.properties.findings.items.properties.category.enum.filter((c) => c !== 'other').sort();
-  const md = fs.readFileSync(path.join(__dirname, '..', 'skills/llm-app-security/01-AUDIT.md'), 'utf8');
+  const md = fs.readFileSync(path.join(__dirname, '..', 'skills/jason/01-AUDIT.md'), 'utf8');
   const table = md.slice(md.indexOf('| Class | Ask |'), md.indexOf('**Fingerprints.**'));
   assert.ok(md.indexOf('**Fingerprints.**') > 0, 'anchor heading exists');
   const classes = [...table.matchAll(/^\| ([^|]+)\|/gm)].flatMap((m) => [...m[1].matchAll(/`([a-z-]+)`/g)].map((x) => x[1])).sort();
@@ -142,13 +142,13 @@ test('plugin and marketplace manifests follow the documented schema', () => {
   const entry = market.plugins.find((p) => p.name === plugin.name);
   assert.ok(entry, 'marketplace lists the plugin under the same name');
   assert.ok(entry.source === './' || entry.source === '.', 'plugin lives at the repo root');
-  assert.ok(fs.existsSync(path.join(root, 'skills/llm-app-security/SKILL.md')), 'skill auto-discovered from skills/');
+  assert.ok(fs.existsSync(path.join(root, 'skills/jason/SKILL.md')), 'skill auto-discovered from skills/');
   assert.ok(!fs.existsSync(path.join(root, '.claude-plugin/skills')), 'skills must not live inside .claude-plugin/');
 });
 
 test('rls-guard flags the example app', () => {
   const { spawnSync } = require('node:child_process');
-  const script = path.join(__dirname, '..', 'skills/llm-app-security/scripts/rls-guard.sh');
+  const script = path.join(__dirname, '..', 'skills/jason/scripts/rls-guard.sh');
   const r = spawnSync('bash', [script, path.join(__dirname, '..', 'examples/vulnerable-vibe-app')], { encoding: 'utf8' });
   assert.strictEqual(r.status, 1);
   assert.match(r.stdout, /public\.profiles has no RLS/);
@@ -158,7 +158,7 @@ test('rls-guard flags the example app', () => {
   assert.match(ok.stdout, /skipped/);
 });
 
-const { compileIgnore } = require('../skills/llm-app-security/scripts/check-honeytokens.cjs');
+const { compileIgnore } = require('../skills/jason/scripts/check-honeytokens.cjs');
 
 function sandbox() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'las-'));

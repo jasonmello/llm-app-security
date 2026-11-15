@@ -1,6 +1,6 @@
 # Notice
 
-- The audit phase structure in `skills/llm-app-security/01-AUDIT.md`
+- The audit phase structure in `skills/jason/01-AUDIT.md`
   (reconnaissance, coverage ledger, coverage-led hunting, adversarial
   validation, schema-checked findings, re-verification, reporting), and
   mechanisms such as stable fingerprints, status-specific finding fields,
