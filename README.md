@@ -1,4 +1,4 @@
-<img src=".claude-plugin/icon.png" alt="J.A.S.O.N. shield icon" width="96" align="right">
+<p align="center"><img src="assets/banner.webp" alt="J.A.S.O.N. — LLM App Security. Just Audit, Secure, Observe, Notify. Give intruders the chainsaw treatment." width="100%"></p>
 
 # J.A.S.O.N. — LLM App Security
 
