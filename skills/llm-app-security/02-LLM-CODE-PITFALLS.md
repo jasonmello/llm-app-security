@@ -160,8 +160,9 @@ siblings have.
   argument object and be single-use; otherwise the model executes different
   arguments or replays it on retry/resume. Side-effecting tools need
   idempotency keys; agent loops need step and spend caps per request.
-- Prompt injection alone is not a finding: report what it can reach (tools,
-  data, rendering). A guardrail prompt is not a security boundary.
+- Report injected text by what it can reach (tools, data, rendering), not by
+  its mere presence. Instructions in a system prompt ("never reveal X") are
+  not access control; enforce limits in code.
 
 ## 7. Hallucinated and risky dependencies
 

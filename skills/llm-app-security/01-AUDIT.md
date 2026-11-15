@@ -3,7 +3,8 @@
 A phased audit. The phase structure (recon → coverage-led hunting →
 adversarial validation → schema-checked findings → report) follows the design
 of Cloudflare's MIT-licensed `security-audit-skill`; the text and checklists
-here are our own and tuned for small, AI-built apps. See `NOTICE.md`.
+here are our own and tuned for small, AI-built apps. See NOTICE.md in the
+repository (https://github.com/jasonmello/llm-app-security).
 
 If your agent supports subagents, run hunters and verifiers as separate,
 fresh subagents so a verifier never inherits the hunter's conclusion. If not,
@@ -198,28 +199,28 @@ Severity guide:
   override codes in a system prompt; LLM output rendered as HTML when the
   model reads third-party or retrieved content; reflected-origin CORS with
   credentials on cookie auth; agent-injection that tells agents to run
-  commands, fetch code or hide findings; stored XSS in admin views.
-- SSRF reaching cloud metadata or internal services is high; critical only
-  when credential theft is demonstrated.
+  commands, fetch code or hide findings; stored XSS in admin views; SSRF
+  reaching cloud metadata or internal services (critical only when credential
+  theft is demonstrated).
 - **medium**: limited IDOR (only non-sensitive fields, or a precondition the
   attacker cannot meet; unguessable UUIDs do not make an IDOR limited, IDs
   leak); missing rate limit on auth/LLM endpoints; reflected
   XSS; verbose errors leaking internals in production; hidden agent
   instructions that only bias reviews.
-  High vs medium: does the flaw fully defeat an explicit control (high) or
-  only weaken it (medium)?
 - **low**: hardening gaps with no direct exploit path; a signed webhook
   missing only replay protection (medium if a replay moves money or credits).
-
-Chained flaws: rate a flaw behind a broken control at its reachable impact
-today and say it depends on finding #N (one level lower once that is fixed).
 - **info**: observations, good practices to adopt.
+
+High vs medium: does the flaw fully defeat an explicit control (high) or only
+weaken it (medium)? Chained flaws: rate a flaw behind a broken control at its
+reachable impact today and say it depends on finding #N (one level lower once
+that is fixed).
 
 Severity never exceeds the impact you demonstrated. Not findings: self-XSS,
 an attacker acting on their own data, the user's own intentional request
-executed by the model, prompt injection with no tool or data to abuse (a
-guardrail prompt is not a security boundary, but its absence alone grants
-nothing).
+executed by the model, and injected text that has no tool, data or rendering
+to abuse. Telling a model "don't do X" in its prompt protects nothing, but a
+missing instruction of that kind is not a vulnerability on its own.
 
 ## Phase 5 — Re-verify, then report
 
@@ -247,7 +248,8 @@ it was not saved.
 8. Next steps: rotate confirmed real secrets first, then criticals, then the
    PR gates in 06 so it does not regress. End with: which fixes should I apply?
 
-A clean run may have zero confirmed findings. Never pad it with low findings.
+Zero confirmed findings is a valid result. Do not invent low-severity items to
+fill the report.
 
 ## Repeat and scoped runs
 

@@ -1,0 +1,4 @@
+- [ ] Defensive only (no offensive tooling, no text aimed at manipulating other agents)
+- [ ] `npm test` passes
+- [ ] New pitfall? Added to `02-LLM-CODE-PITFALLS.md` with detection and fix (and, if possible, a planted example plus an answer-key row)
+- [ ] No real secrets or private code in examples

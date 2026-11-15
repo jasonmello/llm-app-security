@@ -3,7 +3,8 @@
 // Usage: node check-honeytokens.cjs [inventory.md] [--root <repo>]
 // Checks that each bait in the inventory exists, is not under a folder served
 // as-is, is excluded from deploy contexts and absent from build output, and
-// that "local" bait is not tracked by git.
+// that "local" bait is not tracked by git. An inventory kept inside --root must
+// also be excluded from deploy contexts (it maps where the bait is).
 // Default inventory: security/honeytokens.md under the root.
 // Exit 0 = ok, 1 = problems found, 2 = usage error.
 const fs = require('node:fs');
@@ -151,7 +152,7 @@ function check(root, inventoryPath) {
   } catch { /* no package.json */ }
 
   const hasDockerfile = fs.existsSync(path.join(root, 'Dockerfile'));
-  const copiesAll = hasDockerfile && /^\s*(COPY|ADD)\s+(--\S+\s+)*\.\s+/mi.test(fs.readFileSync(path.join(root, 'Dockerfile'), 'utf8'));
+  const copiesAll = hasDockerfile && /^\s*(COPY|ADD)\s+(--\S+\s+)*(\.\/?|\*)\s+/mi.test(fs.readFileSync(path.join(root, 'Dockerfile'), 'utf8'));
   const hasDockerignore = fs.existsSync(path.join(root, '.dockerignore'));
 
   for (const b of baits) {
@@ -161,7 +162,8 @@ function check(root, inventoryPath) {
       continue;
     }
     const rel = path.posix.normalize(b.file.split(path.sep).join('/')).replace(/^\.\//, '');
-    if (!fs.existsSync(path.join(root, rel))) problems.push(`${b.id}: ${rel} not found`);
+    if (rel.startsWith('../')) { problems.push(`${b.id}: ${rel} is outside --root`); continue; }
+    if (!fs.existsSync(path.join(root, rel))) { problems.push(`${b.id}: ${rel} not found`); continue; }
 
     const under = (s) => rel.startsWith(`${s}/`) || rel.includes(`/${s}/`); // monorepos: apps/web/public/
     for (const s of SERVED) if (under(s)) problems.push(`${b.id}: ${rel} is under a folder served as-is (${s}/)`);
@@ -180,6 +182,15 @@ function check(root, inventoryPath) {
       problems.push(`${b.id}: scope is local but ${rel} is tracked by git (use .git/info/exclude and git rm --cached)`);
     }
   }
+  // The inventory is a map of the bait: it must not ship either.
+  const invRel = path.relative(root, inventoryPath).split(path.sep).join('/');
+  if (!invRel.startsWith('../')) {
+    for (const { f, match } of ignores) {
+      if (!match(invRel)) problems.push(`inventory ${invRel} is not excluded by ${f} (would ship the bait map)`);
+    }
+    if (copiesAll && !hasDockerignore) problems.push(`inventory ${invRel}: Dockerfile copies the whole context and there is no .dockerignore`);
+    if (gitTracked(root, invRel)) notes.push(`inventory ${invRel} is tracked by git: fine for a private repo, never for a public one`);
+  }
   if (!ignores.length && !hasDockerfile) notes.push('no deploy ignore files found; make sure bait files are not deployed');
   return { baits, problems, notes };
 }
@@ -188,7 +199,10 @@ function main(argv) {
   let root = process.cwd();
   let inventory;
   for (let i = 0; i < argv.length; i++) {
-    if (argv[i] === '--root') root = path.resolve(argv[++i] || '');
+    if (argv[i] === '--root') {
+      if (!argv[i + 1]) { console.error('--root needs a path'); return 2; }
+      root = path.resolve(argv[++i]);
+    }
     else inventory = argv[i];
   }
   inventory = inventory ? path.resolve(inventory) : path.join(root, 'security', 'honeytokens.md');

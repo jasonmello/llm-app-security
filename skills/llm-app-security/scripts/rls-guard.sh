@@ -9,7 +9,8 @@
 # Usage: bash rls-guard.sh [repo-root]
 set -euo pipefail
 cd "${1:-.}"
-[ -d supabase/migrations ] || exit 0
+[ -d supabase/migrations ] || { echo "no supabase/migrations: skipped"; exit 0; }
+[ -n "$(find supabase/migrations -name '*.sql' -print -quit)" ] || { echo "no .sql migrations: skipped"; exit 0; }
 find supabase/migrations -name '*.sql' -print0 | sort -z | xargs -0 -r perl -0777 -e '
   my $id = qr/(?:"(?:[^"]|"")+"|[A-Za-z_][A-Za-z0-9_\$]*)/;
   my (%rls, %src); my $fail = 0;
@@ -32,5 +33,7 @@ find supabase/migrations -name '*.sql' -print0 | sort -z | xargs -0 -r perl -077
     }
   }
   for (sort keys %rls) { next if $rls{$_}; print "::error file=$src{$_}::public.$_ has no RLS after all migrations\n"; $fail = 1 }
+  my $n = scalar keys %rls;
+  print $n ? "OK: RLS enabled on all $n public table(s)\n" : "no public tables found in migrations\n" unless $fail;
   exit $fail;
 '

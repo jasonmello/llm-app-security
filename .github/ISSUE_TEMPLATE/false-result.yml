@@ -1,0 +1,21 @@
+name: False positive / false negative
+description: The skill reported something that is not a problem, or missed a real one
+labels: [accuracy]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options: [False positive, False negative, Wrong severity]
+    validations: { required: true }
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Mode
+      options: [Quick mode, Full audit, Scoped audit, Honeytokens, Agent defense, PR gates]
+  - type: textarea
+    id: details
+    attributes:
+      label: What happened and what you expected
+      description: Minimal code snippet if possible. Never paste real secrets or private code.
+    validations: { required: true }

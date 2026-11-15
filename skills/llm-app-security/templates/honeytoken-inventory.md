@@ -6,7 +6,7 @@ Keep this file **outside** the repository if the repository is public.
 |----|---------------------|---------------|-------|------------|---------------|---------|-----------|
 | HT-01 | AWS API key | `password.txt` | local | old prod creds | email (owner) | YYYY-MM-DD | YYYY-MM-DD |
 | HT-02 | DNS | `config/replica.env` | committed | read replica host | email | | |
-| HT-03 | AWS API key | `~/.aws/credentials` | local | profile `[prod-backup-2024]` | email | | |
+| HT-03 | AWS API key | `~/.aws/credentials` | local | profile `[prod-backup-old]` | email | | |
 
 `scripts/check-honeytokens.cjs` finds the columns by header name and reads the
 first backticked path in "Bait location". Scope is `local` (untracked, kept

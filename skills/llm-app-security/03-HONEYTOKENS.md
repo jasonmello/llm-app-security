@@ -7,7 +7,9 @@ injection trying to "test" credentials it found.
 
 This module is **passive only**: bait that reports when touched. It never runs
 code on the visitor's machine, never contains instructions aimed at AI agents,
-and never retaliates. That keeps it legal, low-risk and free of false positives.
+and never retaliates. That keeps it low-risk, with few false positives (see "self-triggers" below).
+Laws on monitoring differ by country; this module never collects more than
+the alert the token itself sends.
 
 ## How it works with Canarytokens
 
@@ -23,7 +25,7 @@ change over time, so check the site for the current list. Common ones:
 | DNS | hostname in a config (`db-replica.<token>`) | the name is resolved |
 | Kubeconfig | `kubeconfig-prod.yaml` | someone connects |
 | MySQL dump | `backup.sql` | the dump is imported |
-| Office/PDF document | `senhas-clientes.xlsx`, `contracts.pdf` | the document is opened |
+| Office/PDF document | `client-passwords.xlsx`, `contracts.pdf` | the document is opened |
 | Credit card | test-looking card in a "billing" note | someone tries to use it |
 
 Creating a token needs an alert email or webhook: **ask the user** for it and
@@ -67,7 +69,7 @@ will get them constantly. For public repos, prefer bait outside the repo.
   with `COPY . .` and no `.dockerignore` ships everything.
 - Files outside the repo (`~/.aws/credentials`, `~/.ssh/config`): the agent
   does not read or edit them (module 04 deny rules). It gives the user an
-  append-only snippet with a unique profile name (e.g. `[prod-backup-2024]`)
+  append-only snippet with a unique profile name (e.g. `[prod-backup-old]`)
   and the user adds it.
 
 ## Rules that prevent accidents
@@ -122,5 +124,8 @@ Template: [templates/incident-runbook.md](templates/incident-runbook.md). In sho
    surroundings; update the inventory; add the credential rule to AGENTS.md.
 5. Run `node <skill-dir>/scripts/check-honeytokens.cjs <inventory.md> --root <repo>`
    to check that each bait exists, is not under a served folder and is
-   excluded from deploy contexts and build output.
+   excluded from deploy contexts and build output. If the inventory lives in
+   the repo (e.g. `security/honeytokens.md`), it is a map of the bait: add
+   `security/` to `.dockerignore`, `.vercelignore` and similar files too; the
+   script checks this.
 6. Ask the user to trigger a test alert for each.

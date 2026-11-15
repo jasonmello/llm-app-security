@@ -121,7 +121,8 @@ test('01 class table matches the findings category enum', () => {
   const schema = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'skills/llm-app-security/templates/findings.schema.json'), 'utf8'));
   const enumCats = schema.properties.findings.items.properties.category.enum.filter((c) => c !== 'other').sort();
   const md = fs.readFileSync(path.join(__dirname, '..', 'skills/llm-app-security/01-AUDIT.md'), 'utf8');
-  const table = md.slice(md.indexOf('| Class | Ask |'), md.indexOf('After each unit'));
+  const table = md.slice(md.indexOf('| Class | Ask |'), md.indexOf('**Fingerprints.**'));
+  assert.ok(md.indexOf('**Fingerprints.**') > 0, 'anchor heading exists');
   const classes = [...table.matchAll(/^\| ([^|]+)\|/gm)].flatMap((m) => [...m[1].matchAll(/`([a-z-]+)`/g)].map((x) => x[1])).sort();
   assert.deepStrictEqual(classes, enumCats);
 });
@@ -135,6 +136,7 @@ test('rls-guard flags the example app', () => {
   assert.match(r.stdout, /policy open to everyone: .*invoices/);
   const ok = spawnSync('bash', [script, os.tmpdir()], { encoding: 'utf8' });
   assert.strictEqual(ok.status, 0, 'no supabase/ folder → pass');
+  assert.match(ok.stdout, /skipped/);
 });
 
 const { compileIgnore } = require('../skills/llm-app-security/scripts/check-honeytokens.cjs');
@@ -199,7 +201,7 @@ test('honeytokens: missing exclusion, build copy, missing file, outside repo', (
   assert.match(p, /HT-02: missing.env not found/);
   assert.match(r.notes.join('\n'), /HT-03: .* outside the repo/);
 
-  write(root, '.dockerignore', '*.txt\nmissing.env\n');
+  write(root, '.dockerignore', '*.txt\nmissing.env\nsecurity/\n');
   fs.rmSync(path.join(root, 'dist'), { recursive: true });
   write(root, 'missing.env');
   r = check(root, inv);
@@ -216,4 +218,19 @@ test('honeytokens: served folders, COPY . . without .dockerignore, package files
   assert.match(p, /served as-is \(public\/\)/);
   assert.match(p, /no \.dockerignore/);
   assert.match(p, /package.json "files"/);
+});
+
+test('honeytokens: COPY ./ variant and inventory exposure', () => {
+  const root = sandbox();
+  write(root, 'password.txt');
+  write(root, 'Dockerfile', 'FROM node:24\nCOPY ./ /app\n');
+  const inv = inventory(root, ['| HT-01 | AWS | `password.txt` | local |']);
+  let p = check(root, inv).problems.join('\n');
+  assert.match(p, /HT-01: Dockerfile copies the whole context/);
+  assert.match(p, /inventory security\/honeytokens.md: Dockerfile copies/);
+  write(root, '.dockerignore', 'password.txt\n');
+  p = check(root, inv).problems.join('\n');
+  assert.match(p, /inventory security\/honeytokens.md is not excluded by .dockerignore/);
+  write(root, '.dockerignore', 'password.txt\nsecurity/\n');
+  assert.deepStrictEqual(check(root, inv).problems, []);
 });

@@ -1,0 +1,15 @@
+name: New pitfall
+description: Propose a failure pattern of AI-built apps the skill should check
+labels: [pitfall]
+body:
+  - type: textarea
+    id: pattern
+    attributes:
+      label: Pattern
+      description: What the vulnerable code looks like, and the stack (e.g. Next.js + Supabase).
+    validations: { required: true }
+  - type: textarea
+    id: detect-fix
+    attributes:
+      label: How to detect and fix it
+    validations: { required: true }

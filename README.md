@@ -5,9 +5,11 @@
 ## English
 
 **A defensive security skill for apps built with LLMs and coding agents.**
-Works with Claude Code, Codex, Cursor, Gemini CLI and any agent that loads
-`SKILL.md`-style skills. The skill itself is written in English; the agent
-answers in your language.
+Built and tested for Claude Code; usable with other agents that load
+`SKILL.md` skills or read `AGENTS.md` (Codex, Cursor, Gemini CLI…), though not
+tested on each. A *skill* is a folder of instructions and scripts your coding
+agent loads when a request matches it. The skill itself is written in English;
+the agent answers in your language.
 
 AI-built apps ship fast and usually with the same holes: API keys in the
 front-end, routes without login, databases without access rules. This skill
@@ -41,7 +43,13 @@ security audit with llm-app-security"*.
 
 ```bash
 git clone https://github.com/jasonmello/llm-app-security.git
+# Claude Code, all projects:
+mkdir -p ~/.claude/skills && cp -R llm-app-security/skills/llm-app-security ~/.claude/skills/
 ```
+
+Copy the inner `skills/llm-app-security` folder, not the whole clone. In Claude
+Code the skill triggers on its own from requests like the prompt above, or you
+can ask for "llm-app-security" by name.
 
 | Agent | Where to copy `skills/llm-app-security` |
 |---|---|
@@ -69,17 +77,19 @@ Node 20+ (plus bash and perl for `rls-guard.sh`).
 npm test
 ```
 
-`examples/vulnerable-vibe-app` is an app with 14 deliberately planted flaws;
+`examples/vulnerable-vibe-app` is an app with 16 deliberately planted flaws;
 the answer key is `examples/ANSWER_KEY.md`. For a fair benchmark, copy only the
 app folder somewhere else (without the answer key), run the skill on it, then
 compare. Never install or run the example app: it is insecure on purpose and
-declares a typosquat-looking dependency. The example's "keys" are fake.
+declares a typosquat-looking dependency. The example's "keys" are fake, and its
+README contains a deliberately planted prompt injection aimed at agents: if you
+point an agent at this repository, expect it to be flagged.
 
 ### Credits
 
 - Audit phase structure inspired by Cloudflare's
   [security-audit-skill](https://github.com/cloudflare/security-audit-skill) (MIT).
-- Honeytokens powered by Thinkst [Canarytokens](https://canarytokens.org).
+- Honeytoken guidance uses Thinkst [Canarytokens](https://canarytokens.org) (not affiliated).
 - See [NOTICE.md](NOTICE.md).
 
 ### License
@@ -91,9 +101,11 @@ MIT. See [LICENSE](LICENSE) and [DISCLAIMER.md](DISCLAIMER.md).
 ## Português (Brasil)
 
 **Uma skill de segurança defensiva para apps feitos com LLMs e agentes de código.**
-Funciona com Claude Code, Codex, Cursor, Gemini CLI e qualquer agente que carregue
-skills no formato `SKILL.md`. A skill em si é escrita em inglês; o agente
-responde no seu idioma.
+Feita e testada para o Claude Code; também dá para usar com outros agentes que
+carregam skills `SKILL.md` ou leem `AGENTS.md` (Codex, Cursor, Gemini CLI…),
+mas não foi testada em cada um. Uma *skill* é uma pasta de instruções e scripts
+que o seu agente de código carrega quando o pedido combina com ela. A skill em
+si é escrita em inglês; o agente responde no seu idioma.
 
 Esta é uma tradução; a [versão em inglês](#english) é a de referência.
 
@@ -129,7 +141,13 @@ de segurança completa com a llm-app-security"*.
 
 ```bash
 git clone https://github.com/jasonmello/llm-app-security.git
+# Claude Code, todos os projetos:
+mkdir -p ~/.claude/skills && cp -R llm-app-security/skills/llm-app-security ~/.claude/skills/
 ```
+
+Copie a pasta interna `skills/llm-app-security`, não o clone inteiro. No Claude
+Code a skill é acionada sozinha por pedidos como o prompt acima, ou você pode
+pedir a "llm-app-security" pelo nome.
 
 | Agente | Para onde copiar `skills/llm-app-security` |
 |---|---|
@@ -157,17 +175,20 @@ Node 20+ (mais bash e perl para o `rls-guard.sh`).
 npm test
 ```
 
-`examples/vulnerable-vibe-app` é um app com 14 falhas plantadas de propósito;
+`examples/vulnerable-vibe-app` é um app com 16 falhas plantadas de propósito;
 o gabarito está em `examples/ANSWER_KEY.md`. Para um benchmark justo, copie só a
 pasta do app para outro lugar (sem o gabarito), rode a skill nela e depois
 compare. Nunca instale nem rode o app de exemplo: ele é inseguro de propósito e
-declara uma dependência com cara de typosquat. As "chaves" do exemplo são falsas.
+declara uma dependência com cara de typosquat. As "chaves" do exemplo são falsas,
+e o README dele tem uma prompt injection plantada de propósito, direcionada a
+agentes: se você apontar um agente para este repositório, espere que ela seja
+sinalizada.
 
 ### Créditos
 
 - Estrutura de fases da auditoria inspirada na
   [security-audit-skill](https://github.com/cloudflare/security-audit-skill) (MIT) da Cloudflare.
-- Honeytokens fornecidos pelo [Canarytokens](https://canarytokens.org) da Thinkst.
+- As orientações sobre honeytokens usam o [Canarytokens](https://canarytokens.org) da Thinkst (sem afiliação).
 - Veja [NOTICE.md](NOTICE.md).
 
 ### Licença
@@ -179,9 +200,11 @@ MIT. Veja [LICENSE](LICENSE) e [DISCLAIMER.md](DISCLAIMER.md).
 ## Español
 
 **Una skill de seguridad defensiva para apps construidas con LLMs y agentes de programación.**
-Funciona con Claude Code, Codex, Cursor, Gemini CLI y cualquier agente que cargue
-skills al estilo `SKILL.md`. La skill en sí está escrita en inglés; el agente
-responde en tu idioma.
+Creada y probada para Claude Code; también se puede usar con otros agentes que
+cargan skills `SKILL.md` o leen `AGENTS.md` (Codex, Cursor, Gemini CLI…),
+aunque no se probó en cada uno. Una *skill* es una carpeta de instrucciones y
+scripts que tu agente de programación carga cuando la solicitud coincide con
+ella. La skill en sí está escrita en inglés; el agente responde en tu idioma.
 
 Esta es una traducción; la [versión en inglés](#english) es la de referencia.
 
@@ -216,7 +239,13 @@ auditoría de seguridad completa con llm-app-security"*.
 
 ```bash
 git clone https://github.com/jasonmello/llm-app-security.git
+# Claude Code, todos los proyectos:
+mkdir -p ~/.claude/skills && cp -R llm-app-security/skills/llm-app-security ~/.claude/skills/
 ```
+
+Copia la carpeta interna `skills/llm-app-security`, no el clon completo. En
+Claude Code la skill se activa sola con solicitudes como el prompt de arriba, o
+puedes pedir "llm-app-security" por su nombre.
 
 | Agente | Dónde copiar `skills/llm-app-security` |
 |---|---|
@@ -244,17 +273,19 @@ Node 20+ (más bash y perl para `rls-guard.sh`).
 npm test
 ```
 
-`examples/vulnerable-vibe-app` es una app con 14 fallas plantadas a propósito;
+`examples/vulnerable-vibe-app` es una app con 16 fallas plantadas a propósito;
 las respuestas están en `examples/ANSWER_KEY.md`. Para una comparación justa, copia solo la
 carpeta de la app a otro lugar (sin las respuestas), ejecuta la skill sobre ella y luego
 compara. Nunca instales ni ejecutes la app de ejemplo: es insegura a propósito y
-declara una dependencia con apariencia de typosquat. Las "claves" del ejemplo son falsas.
+declara una dependencia con apariencia de typosquat. Las "claves" del ejemplo son falsas,
+y su README contiene una prompt injection plantada a propósito, dirigida a
+agentes: si apuntas un agente a este repositorio, es normal que la señale.
 
 ### Créditos
 
 - Estructura de fases de la auditoría inspirada en
   [security-audit-skill](https://github.com/cloudflare/security-audit-skill) de Cloudflare (MIT).
-- Honeytokens con tecnología de [Canarytokens](https://canarytokens.org) de Thinkst.
+- Las indicaciones sobre honeytokens usan [Canarytokens](https://canarytokens.org) de Thinkst (sin afiliación).
 - Consulta [NOTICE.md](NOTICE.md).
 
 ### Licencia
