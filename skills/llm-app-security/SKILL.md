@@ -31,7 +31,8 @@ Modes:
 ## Quick mode: pre-launch check
 
 Triggered by requests like "review this as if you wanted to break in", "check
-before I ship the client's app", "revisa como se quisesse invadir".
+before I ship the client's app", "look for exposed keys, routes without login
+and databases without rules" — in any language. Answer in the user's language.
 
 Read-only: no files changed (not even `security/`) unless asked. Allowed:
 read-only local commands (grep, find, git log -p). Optional network lookups

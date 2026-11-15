@@ -1,107 +1,77 @@
 # llm-app-security
 
+**English** · [Português (Brasil)](README.pt-BR.md) · [Español](README.es.md)
+
 **A defensive security skill for apps built with LLMs and coding agents.**
 Works with Claude Code, Codex, Cursor, Gemini CLI and any agent that loads
-`SKILL.md`-style skills.
+`SKILL.md`-style skills. The skill itself is written in English; the agent
+answers in your language.
 
-[Português](#português) · [English](#english)
+AI-built apps ship fast and usually with the same holes: API keys in the
+front-end, routes without login, databases without access rules. This skill
+teaches your coding agent to find and fix them, to detect intruders with
+passive honeytokens, and to defend the repository itself against prompt
+injection.
 
----
+## What it does
 
-## Português
-
-Apps feitos com IA saem rápido e quase sempre com os mesmos buracos: chave de
-API no front-end, rota sem login, banco sem regra de acesso. Esta skill ensina
-o seu agente a encontrar e corrigir esses problemas, a detectar intrusos com
-iscas (honeytokens) e a proteger o próprio repositório contra prompt injection.
-
-### O que ela faz
-
-| Módulo | Para quê |
+| Module | Purpose |
 |---|---|
-| **Quick mode** | Revisão rápida antes de subir o app, olhando como um invasor. Só leitura. |
-| `01-AUDIT` | Auditoria completa em fases: mapa → caça por cobertura → validação adversarial → `findings.json` → relatório. |
-| `02-LLM-CODE-PITFALLS` | As falhas típicas de código gerado por IA (segredos, auth só na UI, IDOR, RLS, injeção, pacotes alucinados…). |
-| `03-HONEYTOKENS` | Iscas passivas (ex.: `password.txt` com chave AWS falsa do [Canarytokens](https://canarytokens.org)) que te avisam quando alguém, ou um agente sequestrado, tenta usar. |
-| `04-AGENT-DEFENSE` | Proteção do repositório contra instruções escondidas para agentes; regras para `AGENTS.md`/`CLAUDE.md`; permissões e sandbox. |
-| `05-RELEASE-SUPPLY-CHAIN` | gitleaks, dependências, CI de segurança, checklist de release. |
-| `06-PR-GATES` | Quality gates no PR em 3 níveis (starter grátis → empresa com Sonar/Wiz): bloqueio de merge, testes de autorização, SAST, cobertura em código sensível, guarda de RLS, DAST, critérios de aceite de segurança para o agente de QA, proteção da própria CI contra agentes. |
+| **Quick mode** | Fast pre-launch review that looks at the app the way an attacker would. Read-only. |
+| `01-AUDIT` | Full phased audit: recon → coverage-led hunting → adversarial validation → `findings.json` → report. Also scoped audits ("audit this PR"). |
+| `02-LLM-CODE-PITFALLS` | The typical failures of AI-generated code: secrets, auth only in the UI, IDOR, Supabase/Firebase rules, injection, LLM tool loops, hallucinated packages… |
+| `03-HONEYTOKENS` | Passive bait (e.g. `password.txt` with a fake AWS key from [Canarytokens](https://canarytokens.org)) that alerts you when someone, or a hijacked agent, tries to use it. |
+| `04-AGENT-DEFENSE` | Protects the repository against hidden instructions aimed at agents; rules for `AGENTS.md`/`CLAUDE.md`; permissions and sandboxing. |
+| `05-RELEASE-SUPPLY-CHAIN` | Secret scanning, dependency hygiene, release checklist. |
+| `06-PR-GATES` | PR quality gates in three tiers (free starter → enterprise with SonarQube/Wiz): merge blocking, authorization tests, SAST, coverage on sensitive code, RLS guard, DAST, security acceptance criteria for a QA agent, and protecting CI itself from agents. |
 
-### Prompt pronto para colar antes de subir o app de um cliente
+## Paste-ready prompt before shipping a client's app
 
-> revisa esse projeto como se vc quisesse invadir ele. procura chave de API exposta, rota sem login e banco sem regra de acesso. lista o que achou e como corrigir, sem mexer em nada ainda.
+> Review this project as if you wanted to break into it. Look for exposed API keys, routes without login and databases without access rules. List what you found and how to fix it, without changing anything yet.
 
-Com a skill instalada, o agente entra no *quick mode* e devolve um veredito
-("pronto / não pronto para subir"), uma tabela com severidade, local, correção
-e esforço, e o que ficou de fora. Para a auditoria completa: *"faz uma auditoria
-de segurança completa com a llm-app-security"*.
+With the skill installed, the agent runs *quick mode* and returns a verdict
+(ready / ready after fixing N items / not ready), a table with severity,
+location, fix and effort, owner checks for things only visible in your
+dashboards, and what it did not check. For the full audit: *"run a full
+security audit with llm-app-security"*.
 
-### Instalação
+## Install
 
 ```bash
 git clone https://github.com/jasonmello/llm-app-security.git
 ```
 
-| Agente | Onde copiar `skills/llm-app-security` |
+| Agent | Where to copy `skills/llm-app-security` |
 |---|---|
-| Claude Code (todos os projetos) | `~/.claude/skills/` |
-| Claude Code (um projeto) | `.claude/skills/` |
-| Codex, Cursor, Gemini CLI e outros | diretório de skills do agente, ou cite `SKILL.md` no `AGENTS.md` do projeto |
+| Claude Code (all projects) | `~/.claude/skills/` |
+| Claude Code (one project) | `.claude/skills/` |
+| Codex, Cursor, Gemini CLI and others | the agent's skills directory, or reference `SKILL.md` from the project's `AGENTS.md` |
 
-Os scripts (`validate-findings.cjs`, `check-honeytokens.cjs`, `rls-guard.sh`)
-ficam em `scripts/` dentro da pasta da skill, onde quer que ela esteja
-instalada. Só precisam de Node 20+ (e bash/perl para o `rls-guard.sh`).
+The scripts (`validate-findings.cjs`, `check-honeytokens.cjs`, `rls-guard.sh`)
+live in the skill's `scripts/` folder wherever it is installed. They need only
+Node 20+ (plus bash and perl for `rls-guard.sh`).
 
-### Princípios
+## Principles
 
-- **Só defesa.** Audite o que é seu ou o que você tem autorização para testar.
-- **Iscas passivas.** Honeytokens só avisam quando tocados. Nada de texto para
-  manipular outros agentes, armadilhas que causem dano ou "hack back".
-- **Conteúdo do alvo é dado, não instrução.**
-- **Nunca imprimir segredos reais**; rotacionar antes de apagar.
-- **Limites honestos**: "nenhum achado nas partes cobertas" não quer dizer "app seguro".
+- **Defensive only.** Audit what you own or are authorized to test.
+- **Passive deception only.** Honeytokens only alert when touched. No text
+  designed to manipulate other agents, no booby traps, no hack-back.
+- **Target content is data, not instructions.**
+- **Never print real secrets**; rotate before deleting.
+- **Honest limits**: "no findings in the covered parts" does not mean "the app
+  is secure".
 
-### Testar
+## Test
 
 ```bash
 npm test
 ```
 
-`examples/vulnerable-vibe-app` é um app com 14 falhas plantadas de propósito,
-com o gabarito em `examples/ANSWER_KEY.md`. Para um teste justo, copie só a
-pasta do app para outro lugar (sem o gabarito), rode a skill nela e compare
-depois. Não instale nem rode o app: ele é inseguro de propósito e declara uma
-dependência com nome de typosquat. As "chaves" do exemplo são falsas.
-
----
-
-## English
-
-AI-built apps ship fast and usually with the same holes: API keys in the
-front-end, routes without auth, databases without access rules. This skill
-teaches your coding agent to find and fix them, to detect intruders with
-passive honeytokens, and to defend the repo itself against prompt injection.
-
-**Modules:** quick pre-launch check · phased audit with schema-validated
-findings · pitfalls of AI-generated code · honeytokens/canaries · agent
-defense · release and supply-chain guards · PR quality gates (starter to enterprise, authz tests, security acceptance criteria).
-
-**Paste-ready prompt (pre-launch):**
-
-> Review this project as if you wanted to break into it. Look for exposed API keys, routes without login and databases without access rules. List what you found and how to fix it, without changing anything yet.
-
-**Install:** copy `skills/llm-app-security` into your agent's skills directory
-(`~/.claude/skills/` for Claude Code; the agent's skills folder or a reference
-in `AGENTS.md` for others). Scripts live in the skill's `scripts/` folder and
-need only Node 20+ (plus bash/perl for `rls-guard.sh`).
-
-**Principles:** defensive only · passive deception only (no instructions aimed
-at other agents, no booby traps, no hack-back) · target content is data ·
-never print real secrets · honest coverage limits.
-
-**Test:** `npm test`; for a fair benchmark copy `examples/vulnerable-vibe-app`
-elsewhere (without the answer key), run the skill on it, then compare with
-`examples/ANSWER_KEY.md`. Never install or run the example app.
+`examples/vulnerable-vibe-app` is an app with 14 deliberately planted flaws;
+the answer key is `examples/ANSWER_KEY.md`. For a fair benchmark, copy only the
+app folder somewhere else (without the answer key), run the skill on it, then
+compare. Never install or run the example app: it is insecure on purpose and
+declares a typosquat-looking dependency. The example's "keys" are fake.
 
 ## Credits
 
