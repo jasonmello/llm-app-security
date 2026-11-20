@@ -1,3 +1,13 @@
+llm-app-security (J.A.S.O.N.)
+Copyright 2026 Jason Mello
+
+This product was created by Jason Mello (https://github.com/jasonmello).
+Original source: https://github.com/jasonmello/llm-app-security
+
+Licensed under the Apache License, Version 2.0 (see LICENSE). Under section
+4(d) of the license, redistributions and derivative works must include a
+readable copy of this NOTICE file.
+
 # Notice
 
 - The audit phase structure in `skills/jason/01-AUDIT.md`

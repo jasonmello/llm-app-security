@@ -174,7 +174,7 @@ point an agent at this repository, expect it to be flagged.
 
 ### License
 
-MIT. See [LICENSE](LICENSE) and [DISCLAIMER.md](DISCLAIMER.md).
+Apache 2.0. See [LICENSE](LICENSE), [NOTICE.md](NOTICE.md) and [DISCLAIMER.md](DISCLAIMER.md).
 
 ---
 
@@ -350,7 +350,7 @@ sinalizada.
 
 ### Licença
 
-MIT. Veja [LICENSE](LICENSE) e [DISCLAIMER.md](DISCLAIMER.md).
+Apache 2.0. Veja [LICENSE](LICENSE), [NOTICE.md](NOTICE.md) e [DISCLAIMER.md](DISCLAIMER.md).
 
 ---
 
@@ -524,4 +524,4 @@ agentes: si apuntas un agente a este repositorio, es normal que la señale.
 
 ### Licencia
 
-MIT. Consulta [LICENSE](LICENSE) y [DISCLAIMER.md](DISCLAIMER.md).
+Apache 2.0. Consulta [LICENSE](LICENSE), [NOTICE.md](NOTICE.md) y [DISCLAIMER.md](DISCLAIMER.md).
